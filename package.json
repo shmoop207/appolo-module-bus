@@ -1,0 +1,41 @@
+{
+  "name": "@appolo/bus",
+  "version": "0.0.1",
+  "description": "appolo bus module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [],
+  "main": "index.js",
+  "dependencies": {
+    "@appolo/logger": "0.0.14",
+    "appolo": "^6.0.59",
+    "bluebird": "^3.5.3",
+    "lodash": "^4.17.11",
+    "rabbot": "^2.1.0",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/bluebird": "^3.5.25",
+    "@types/chai": "^4.1.7",
+    "@types/lodash": "^4.14.120",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.12.21",
+    "@types/sinon": "^7.0.5",
+    "@types/sinon-chai": "^3.2.2",
+    "@types/uuid": "^3.4.4",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "sinon": "^7.2.3",
+    "sinon-chai": "^3.3.0",
+    "typescript": "^3.3.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shmoop207/appolo-module-bus.git"
+  },
+  "author": {
+    "name": "roman svichar"
+  },
+  "license": "MIT"
+}
