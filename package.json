@@ -5,7 +5,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "keywords": [],
+  "keywords": ["appolo","rabbit","bus"],
   "main": "index.js",
   "dependencies": {
     "@appolo/http": "0.0.2",
