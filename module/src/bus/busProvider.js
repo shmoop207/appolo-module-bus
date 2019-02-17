@@ -14,6 +14,7 @@ let BusProvider = class BusProvider {
         if (!this._inInitialized) {
             await this.messageManager.initialize();
             this._inInitialized = true;
+            this.app.once(appolo_1.Events.BeforeReset, () => this.close());
         }
     }
     publish(type, data, expire) {
@@ -29,7 +30,7 @@ let BusProvider = class BusProvider {
         if (expire) {
             params.expiresAfter = expire;
         }
-        return this.client.publish(this.topologyManager.exchangeName, params);
+        return this.client.publish(this.topologyManager.exchangeName, params, this.topologyManager.connectionName);
     }
     async request(type, data, expire) {
         expire = expire || this.moduleOptions.replyTimeout;
@@ -46,7 +47,7 @@ let BusProvider = class BusProvider {
             params.replyTimeout = expire;
             params.expiresAfter = expire;
         }
-        let msg = await this.client.request(this.topologyManager.exchangeName, params);
+        let msg = await this.client.request(this.topologyManager.exchangeName, params, undefined, this.topologyManager.connectionName);
         if (msg.body.success) {
             return msg.body.data;
         }
@@ -56,18 +57,9 @@ let BusProvider = class BusProvider {
             throw error;
         }
     }
-    replySuccess(msg, data) {
-        msg.reply({
-            success: true,
-            data: data
-        });
-    }
-    replyError(msg, e) {
-        msg.reply({
-            success: false,
-            message: e.message,
-            data: e.data
-        });
+    async close() {
+        this.messageManager.clean();
+        await this.client.close(this.topologyManager.connectionName, true);
     }
     async getQueueMessagesCount() {
         try {
@@ -76,8 +68,8 @@ let BusProvider = class BusProvider {
                 json: true,
                 url: `https://${amqp.auth.split(":")[0]}:${amqp.auth.split(":")[1]}@${amqp.hostname}/api/queues/${amqp.path.substr(1)}/${this.topologyManager.queueName}`
             };
-            let res = await RequestProvider.createRequest(params);
-            return res.messages;
+            let res = await this.httpService.request(params);
+            return res.data.messages;
         }
         catch (e) {
             this.logger.error(`failed to get messages count from ${this.topologyManager.queueName}`);
@@ -100,6 +92,12 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     appolo_1.inject()
 ], BusProvider.prototype, "messageManager", void 0);
+tslib_1.__decorate([
+    appolo_1.inject()
+], BusProvider.prototype, "httpService", void 0);
+tslib_1.__decorate([
+    appolo_1.inject()
+], BusProvider.prototype, "app", void 0);
 BusProvider = tslib_1.__decorate([
     appolo_1.define(),
     appolo_1.singleton()

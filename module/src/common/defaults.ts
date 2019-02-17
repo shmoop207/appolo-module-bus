@@ -1,7 +1,9 @@
-export const Defaults = {
+import {IOptions} from "./IOptions";
+
+export const Defaults = <Partial<IOptions>>{
     id: "busProvider",
     listener: true,
-    autoInit: true,
+    auto: true,
     appendEnv: true,
     replyTimeout: 1000 * 60 * 5,
     exchange: {

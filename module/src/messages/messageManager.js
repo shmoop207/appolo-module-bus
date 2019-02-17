@@ -5,17 +5,18 @@ const index_1 = require("appolo/index");
 const _ = require("lodash");
 let MessageManager = class MessageManager {
     async initialize() {
-        this.client.handle("#", msg => this._handleMessage(msg));
+        this._handler = this.client.handle("#", msg => this._handleMessage(msg));
         if (this.handlersManager.keys.length) {
-            this.client.startSubscription(this.topologyManager.queueName);
+            this.client.startSubscription(this.topologyManager.queueName, false, this.topologyManager.connectionName);
             this.logger.info(`bus handler subscription ${this.handlersManager.keys.join(",")}`);
         }
         if (this.repliesManager.keys.length) {
-            this.client.startSubscription(this.topologyManager.queueNameRequest);
+            this.client.startSubscription(this.topologyManager.queueNameRequest, false, this.topologyManager.connectionName);
             this.logger.info(`bus reply subscription ${this.repliesManager.keys.join(",")}`);
         }
     }
     async _handleMessage(msg) {
+        this._extendMessage(msg);
         let handlers = this.handlersManager.getHandlers(msg.type);
         //we have handler
         if (handlers.length) {
@@ -35,22 +36,77 @@ let MessageManager = class MessageManager {
         try {
             let instance = this.injector.parent.get(handler.define.definition.id);
             await instance[handler.propertyKey](msg);
-            msg.ack();
+            if (!msg.sent) {
+                msg.ack();
+            }
         }
         catch (e) {
             this.logger.error(`failed to handle message ${msg.type}`, { err: e, msg: msg });
-            msg.nack();
+            if (!msg.sent) {
+                msg.nack();
+            }
         }
     }
     async _callReply(msg, handler) {
         try {
             let instance = this.injector.parent.get(handler.define.definition.id);
             let data = await instance[handler.propertyKey](msg);
-            this.busProvider.replySuccess(msg, data);
+            if (!msg.sent) {
+                msg.replySuccess(data);
+            }
         }
         catch (e) {
-            this.busProvider.replyError(msg, e);
+            if (!msg.sent) {
+                msg.replyError(e);
+            }
         }
+    }
+    _extendMessage(msg) {
+        let oldAck = msg.ack;
+        let oldReject = msg.reject;
+        let oldNack = msg.nack;
+        let oldReply = msg.reply;
+        msg.ack = function () {
+            this.sent = true;
+            return oldAck.apply(this, arguments);
+        };
+        msg.reject = function () {
+            this.sent = true;
+            return oldReject.apply(this, arguments);
+        };
+        msg.nack = function () {
+            this.sent = true;
+            return oldNack.apply(this, arguments);
+        };
+        msg.reply = function () {
+            this.sent = true;
+            return oldReply.apply(this, arguments);
+        };
+        msg.replySuccess = function (data) {
+            return this.reply({
+                success: true,
+                data: data
+            });
+        };
+        msg.replyError = function (e) {
+            return this.reply({
+                success: false,
+                message: e && e.message,
+                data: e && e.data
+            });
+        };
+    }
+    clean() {
+        if (this.handlersManager.keys.length) {
+            this.client.stopSubscription(this.topologyManager.queueName, this.topologyManager.connectionName);
+        }
+        if (this.repliesManager.keys.length) {
+            this.client.stopSubscription(this.topologyManager.queueNameRequest, this.topologyManager.connectionName);
+        }
+        this._handler.remove();
+        this.repliesManager.clean();
+        this.handlersManager.clean();
+        this._handler = null;
     }
 };
 tslib_1.__decorate([

@@ -22,9 +22,9 @@ let Client = class Client {
             this.logger.error("connection to rabbit failed", { err: err });
             (this.topologyManager.envName != "testing") && process.exit(1);
         });
-        rabbit.on('closed', () => {
-            this.logger.error("connection to rabbit closed");
-        });
+        // rabbit.on('closed', () => {
+        //     this.logger.error("connection to rabbit closed");
+        // });
         rabbit.onUnhandled(function (message) {
             message.ack();
         });

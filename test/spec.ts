@@ -1,5 +1,5 @@
 import {createApp,App} from 'appolo'
-import {BusModule} from "../index";
+import {BusModule, BusProvider} from "../index";
 import {MessagePublisher} from "./src/publisher";
 import {MessageHandler} from "./src/handler";
 import chai = require('chai');
@@ -26,8 +26,21 @@ describe("bus module Spec", function () {
     });
 
     afterEach(async ()=>{
+
         await app.reset();
     });
+
+    it("should request reply", async () => {
+
+
+        let publisher = app.injector.get<MessagePublisher>(MessagePublisher);
+        //let handler = app.injector.get<MessageHandler>(MessageHandler);
+
+        let data = await publisher.requestMethod("aa");
+
+        data.result.should.be.eq("aaworking")
+
+    })
 
     it("should load bus", async () => {
 
@@ -37,7 +50,7 @@ describe("bus module Spec", function () {
 
         let spy = sinon.spy(handler, "handle");
 
-        await publisher.publish("aa");
+        await publisher.publishMethod("aa");
 
         await delay(1000);
 
@@ -48,18 +61,7 @@ describe("bus module Spec", function () {
 
     });
 
-    it("should request reply", async () => {
 
-
-        let publisher = app.injector.get<MessagePublisher>(MessagePublisher);
-        let handler = app.injector.get<MessageHandler>(MessageHandler);
-
-        let data = await publisher.request("aa");
-
-        data.result.should.be.eq("aaworking")
-
-
-    })
 });
 
 

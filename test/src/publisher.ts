@@ -1,17 +1,19 @@
 import {define, singleton} from 'appolo'
-import {publisher, request, response} from "../../index";
+import {publisher, request, params,Publisher} from "../../index";
 
 @define()
 @singleton()
-export class MessagePublisher {
+export class MessagePublisher extends Publisher{
 
     @publisher("Module.Test")
-    async publish(test: string): Promise<any> {
-        return {test}
+    async publishMethod(test: string): Promise<void> {
+
+        return params({test})
     }
 
     @request("Request.Module.Test")
-    async request(test: string): Promise<{ result: string }> {
-        return response({test})
+    async requestMethod(test: string): Promise<{ result: string }> {
+
+        return params({test})
     }
 }

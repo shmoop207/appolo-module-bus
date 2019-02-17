@@ -31,6 +31,9 @@ let BaseHandlersManager = class BaseHandlersManager {
     getHandlers(key) {
         return this._handlers.get(key) || [];
     }
+    clean() {
+        this._handlers.clear();
+    }
 };
 tslib_1.__decorate([
     appolo_1.inject()

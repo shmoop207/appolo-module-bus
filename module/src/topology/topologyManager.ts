@@ -13,8 +13,14 @@ export class TopologyManager {
     @inject() private handlersManager: HandlersManager;
     @inject() private repliesManager: RepliesManager;
 
+    private _connectionGuid: string = uuid.v4();
+
     public get exchangeName(): string {
         return this.appendEnv(this.moduleOptions.exchangeName);
+    }
+
+    public get connectionName(): string {
+        return `${this.queueName}-${this._connectionGuid}`;
     }
 
     public appendEnv(name: string): string {
@@ -60,6 +66,7 @@ export class TopologyManager {
 
         let config = {
             connection: {
+                name: this.connectionName,
                 user: amqp.auth.split(":")[0],
                 pass: amqp.auth.split(":")[1],
                 server: amqp.hostname,

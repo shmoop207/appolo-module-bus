@@ -4,7 +4,7 @@ const tslib_1 = require("tslib");
 const appolo_1 = require("appolo");
 let Bootstrap = class Bootstrap {
     async run() {
-        if (this.moduleOptions.autoInit) {
+        if (this.moduleOptions.auto) {
             await this.busProvider.initialize();
         }
     }

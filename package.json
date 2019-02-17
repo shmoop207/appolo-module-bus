@@ -8,6 +8,7 @@
   "keywords": [],
   "main": "index.js",
   "dependencies": {
+    "@appolo/http": "0.0.2",
     "@appolo/logger": "0.0.14",
     "appolo": "^6.0.59",
     "bluebird": "^3.5.3",

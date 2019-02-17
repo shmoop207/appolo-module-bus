@@ -1,7 +1,8 @@
 "use strict";
-import {define, inject, singleton} from 'appolo'
+import {define, inject, singleton,App,Events} from 'appolo'
 import {IOptions} from "../common/IOptions";
 import {ILogger} from '@appolo/logger';
+import {HttpService} from '@appolo/http';
 import * as _ from 'lodash';
 import {IClient, IMessage} from "../common/interfaces";
 import {TopologyManager} from "../topology/topologyManager";
@@ -19,6 +20,8 @@ export class BusProvider {
     @inject() protected topologyManager: TopologyManager;
     @inject() protected client: IClient;
     @inject() protected messageManager: MessageManager;
+    @inject() protected httpService: HttpService;
+    @inject() protected app: App;
 
     private _inInitialized: boolean = false;
 
@@ -27,6 +30,8 @@ export class BusProvider {
         if (!this._inInitialized) {
             await this.messageManager.initialize();
             this._inInitialized = true;
+
+            this.app.once(Events.BeforeReset, () =>this.close())
         }
     }
 
@@ -46,7 +51,7 @@ export class BusProvider {
             params.expiresAfter = expire;
         }
 
-        return this.client.publish(this.topologyManager.exchangeName, params);
+        return this.client.publish(this.topologyManager.exchangeName, params,this.topologyManager.connectionName);
     }
 
     public async request<T>(type: string, data: any, expire?: number): Promise<T> {
@@ -70,7 +75,7 @@ export class BusProvider {
             params.expiresAfter = expire;
         }
 
-        let msg = await this.client.request(this.topologyManager.exchangeName, params);
+        let msg = await this.client.request(this.topologyManager.exchangeName, params,undefined,this.topologyManager.connectionName);
 
         if (msg.body.success) {
 
@@ -86,19 +91,10 @@ export class BusProvider {
         }
     }
 
-    public replySuccess<T, K>(msg: IMessage<K>, data?: T) {
-        msg.reply({
-            success: true,
-            data: data
-        })
-    }
+    public async close(){
+        this.messageManager.clean();
 
-    public replyError<T, K>(msg: IMessage<K>, e: RequestError<T>) {
-        msg.reply({
-            success: false,
-            message: e.message,
-            data: e.data
-        })
+        await this.client.close(this.topologyManager.connectionName,true);
     }
 
     public async getQueueMessagesCount(): Promise<number> {
@@ -111,9 +107,9 @@ export class BusProvider {
                 url: `https://${amqp.auth.split(":")[0]}:${amqp.auth.split(":")[1]}@${amqp.hostname}/api/queues/${ amqp.path.substr(1)}/${this.topologyManager.queueName}`
             };
 
-            let res = await RequestProvider.createRequest<{ messages: number }>(params);
+            let res = await this.httpService.request<{ messages: number }>(params);
 
-            return res.messages;
+            return res.data.messages;
         } catch (e) {
             this.logger.error(`failed to get messages count from ${this.topologyManager.queueName}`)
             throw e;

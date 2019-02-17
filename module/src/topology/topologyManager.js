@@ -5,8 +5,14 @@ const index_1 = require("appolo/index");
 const uuid = require("uuid");
 const url = require("url");
 let TopologyManager = class TopologyManager {
+    constructor() {
+        this._connectionGuid = uuid.v4();
+    }
     get exchangeName() {
         return this.appendEnv(this.moduleOptions.exchangeName);
+    }
+    get connectionName() {
+        return `${this.queueName}-${this._connectionGuid}`;
     }
     appendEnv(name) {
         return this.moduleOptions.appendEnv ? (`${name}-${this.envName}`) : name;
@@ -39,6 +45,7 @@ let TopologyManager = class TopologyManager {
         }
         let config = {
             connection: {
+                name: this.connectionName,
                 user: amqp.auth.split(":")[0],
                 pass: amqp.auth.split(":")[1],
                 server: amqp.hostname,

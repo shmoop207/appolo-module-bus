@@ -3,20 +3,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const appolo_1 = require("appolo");
 const index_1 = require("../../index");
-let MessagePublisher = class MessagePublisher {
-    async publish(test) {
-        return { test };
+let MessagePublisher = class MessagePublisher extends index_1.Publisher {
+    async publishMethod(test) {
+        return index_1.params({ test });
     }
-    async request(test) {
-        return index_1.response({ test });
+    async requestMethod(test) {
+        return index_1.params({ test });
     }
 };
 tslib_1.__decorate([
     index_1.publisher("Module.Test")
-], MessagePublisher.prototype, "publish", null);
+], MessagePublisher.prototype, "publishMethod", null);
 tslib_1.__decorate([
     index_1.request("Request.Module.Test")
-], MessagePublisher.prototype, "request", null);
+], MessagePublisher.prototype, "requestMethod", null);
 MessagePublisher = tslib_1.__decorate([
     appolo_1.define(),
     appolo_1.singleton()

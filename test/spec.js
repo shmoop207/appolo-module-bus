@@ -22,20 +22,20 @@ describe("bus module Spec", function () {
     afterEach(async () => {
         await app.reset();
     });
+    it("should request reply", async () => {
+        let publisher = app.injector.get(publisher_1.MessagePublisher);
+        //let handler = app.injector.get<MessageHandler>(MessageHandler);
+        let data = await publisher.requestMethod("aa");
+        data.result.should.be.eq("aaworking");
+    });
     it("should load bus", async () => {
         let publisher = app.injector.get(publisher_1.MessagePublisher);
         let handler = app.injector.get(handler_1.MessageHandler);
         let spy = sinon.spy(handler, "handle");
-        await publisher.publish("aa");
+        await publisher.publishMethod("aa");
         await delay(1000);
         spy.should.have.been.calledOnce;
         spy.getCall(0).args[0].body.test.should.be.eq("aa");
-    });
-    it("should request reply", async () => {
-        let publisher = app.injector.get(publisher_1.MessagePublisher);
-        let handler = app.injector.get(handler_1.MessageHandler);
-        let data = await publisher.request("aa");
-        data.result.should.be.eq("aaworking");
     });
 });
 //# sourceMappingURL=spec.js.map

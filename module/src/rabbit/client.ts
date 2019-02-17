@@ -44,9 +44,9 @@ export class Client implements IFactory<IClient> {
             (this.topologyManager.envName != "testing") && process.exit(1);
         });
 
-        rabbit.on('closed', () => {
-            this.logger.error("connection to rabbit closed");
-        });
+        // rabbit.on('closed', () => {
+        //     this.logger.error("connection to rabbit closed");
+        // });
 
         rabbit.onUnhandled(function (message) {
             message.ack();

@@ -49,4 +49,8 @@ export abstract class BaseHandlersManager {
         return this._handlers.get(key) || []
     }
 
+    public clean(){
+        this._handlers.clear();
+    }
+
 }

@@ -4,9 +4,9 @@ import {IExchange, IQueue} from "./interfaces";
 export interface IOptions extends IModuleOptions {
     id?: string;
     connection: string;
-    queueName: string;
+    auto?: boolean;
     listener?: boolean;
-    autoInit?: boolean;
+    queueName: string;
     exchangeName: string;
     appendEnv?:boolean
     queue?: IQueue;
