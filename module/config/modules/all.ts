@@ -6,7 +6,7 @@ import {HttpModule} from '@appolo/http';
 
 export = async function (app: App) {
 
-    if(!app.injector.hasInstance("logger")){
+    if(!app.injector.hasDefinition("logger")){
         await app.module(LoggerModule)
     }
 
