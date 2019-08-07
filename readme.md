@@ -1,8 +1,4 @@
----
-id: bus
-title: Bus
-sidebar_label: Bus
----
+# Appolo Bus Module
 bus module for [`appolo`](https://github.com/shmoop207/appolo) built with [rabbot](https://github.com/arobson/rabbot)
 
 ## Installation

@@ -1,5 +1,5 @@
 "use strict";
-import {define, inject, singleton,App,Events} from 'appolo'
+import {define, inject, singleton, App, Events} from 'appolo'
 import {IOptions} from "../common/IOptions";
 import {ILogger} from '@appolo/logger';
 import {HttpService} from '@appolo/http';
@@ -31,11 +31,16 @@ export class BusProvider {
             await this.messageManager.initialize();
             this._inInitialized = true;
 
-            this.app.once(Events.BeforeReset, () =>this.close())
+            this.app.once(Events.BeforeReset, () => this.close())
         }
     }
 
     public publish(type: string, data: any, expire?: number): Promise<void> {
+        if (arguments.length > 3) {
+            type = arguments[1];
+            data = arguments[2];
+            expire = arguments[3];
+        }
 
         let params = <any>{
             messageId: uuid.v4(),
@@ -51,11 +56,16 @@ export class BusProvider {
             params.expiresAfter = expire;
         }
 
-        return this.client.publish(this.topologyManager.exchangeName, params,this.topologyManager.connectionName);
+        return this.client.publish(this.topologyManager.exchangeName, params, this.topologyManager.connectionName);
     }
 
     public async request<T>(type: string, data: any, expire?: number): Promise<T> {
 
+        if (arguments.length > 3) {
+            type = arguments[1];
+            data = arguments[2];
+            expire = arguments[3];
+        }
 
         expire = expire || this.moduleOptions.replyTimeout;
 
@@ -75,7 +85,7 @@ export class BusProvider {
             params.expiresAfter = expire;
         }
 
-        let msg = await this.client.request(this.topologyManager.exchangeName, params,undefined,this.topologyManager.connectionName);
+        let msg = await this.client.request(this.topologyManager.exchangeName, params, undefined, this.topologyManager.connectionName);
 
         if (msg.body.success) {
 
@@ -91,10 +101,10 @@ export class BusProvider {
         }
     }
 
-    public async close(){
+    public async close() {
         this.messageManager.clean();
 
-        await this.client.close(this.topologyManager.connectionName,true);
+        await this.client.close(this.topologyManager.connectionName, true);
     }
 
     public async getQueueMessagesCount(): Promise<number> {
@@ -104,7 +114,7 @@ export class BusProvider {
 
             let params = {
                 json: true,
-                url: `https://${amqp.auth.split(":")[0]}:${amqp.auth.split(":")[1]}@${amqp.hostname}/api/queues/${ amqp.path.substr(1)}/${this.topologyManager.queueName}`
+                url: `https://${amqp.auth.split(":")[0]}:${amqp.auth.split(":")[1]}@${amqp.hostname}/api/queues/${amqp.path.substr(1)}/${this.topologyManager.queueName}`
             };
 
             let res = await this.httpService.request<{ messages: number }>(params);

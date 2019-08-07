@@ -18,6 +18,11 @@ let BusProvider = class BusProvider {
         }
     }
     publish(type, data, expire) {
+        if (arguments.length > 3) {
+            type = arguments[1];
+            data = arguments[2];
+            expire = arguments[3];
+        }
         let params = {
             messageId: uuid.v4(),
             type: type,
@@ -33,6 +38,11 @@ let BusProvider = class BusProvider {
         return this.client.publish(this.topologyManager.exchangeName, params, this.topologyManager.connectionName);
     }
     async request(type, data, expire) {
+        if (arguments.length > 3) {
+            type = arguments[1];
+            data = arguments[2];
+            expire = arguments[3];
+        }
         expire = expire || this.moduleOptions.replyTimeout;
         let params = {
             messageId: uuid.v4(),
