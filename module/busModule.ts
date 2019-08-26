@@ -15,7 +15,7 @@ export class BusModule extends Module<IOptions> {
         super(options)
     }
 
-    protected get defaults(): Partial<IOptions> {
+    public get defaults(): Partial<IOptions> {
         return Defaults
     }
 
@@ -23,7 +23,7 @@ export class BusModule extends Module<IOptions> {
         return [{id: this.moduleOptions.id, type: BusProvider}];
     }
 
-    protected beforeInitialize() {
+    public beforeInitialize() {
 
         let publisherMeta = Util.findAllReflectData<IPublisherMetadata>(PublisherSymbol, this.app.parent.exported);
         let requestMeta = Util.findAllReflectData<IPublisherMetadata>(RequestSymbol, this.app.parent.exported);

@@ -1,6 +1,6 @@
 {
   "name": "@appolo/bus",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "appolo bus module",
   "publishConfig": {
     "access": "public"
@@ -14,7 +14,7 @@
   "dependencies": {
     "@appolo/http": "0.0.3",
     "@appolo/logger": "1.0.5",
-    "appolo": "^6.0.85",
+    "appolo": "^6.0.86",
     "bluebird": "^3.5.5",
     "lodash": "^4.17.15",
     "rabbot": "^2.1.0",
