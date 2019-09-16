@@ -2,12 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const appolo_1 = require("appolo");
-const decorators_1 = require("../common/decorators");
 const baseHandlersManager_1 = require("./baseHandlersManager");
 let RepliesManager = class RepliesManager extends baseHandlersManager_1.BaseHandlersManager {
     constructor() {
         super(...arguments);
-        this.Symbol = decorators_1.ReplySymbol;
         this.Uniq = true;
     }
 };

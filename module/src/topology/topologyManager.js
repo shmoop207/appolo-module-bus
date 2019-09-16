@@ -2,76 +2,128 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const index_1 = require("appolo/index");
-const uuid = require("uuid");
+const _ = require("lodash");
 const url = require("url");
+const defaults_1 = require("../common/defaults");
+const decorators_1 = require("../common/decorators");
 let TopologyManager = class TopologyManager {
-    constructor() {
-        this._connectionGuid = uuid.v4();
-    }
-    get exchangeName() {
-        return this.appendEnv(this.moduleOptions.exchangeName);
-    }
-    get connectionName() {
-        return `${this.queueName}-${this._connectionGuid}`;
-    }
     appendEnv(name) {
-        return this.moduleOptions.appendEnv ? (`${name}-${this.envName}`) : name;
+        return name ? (this.moduleOptions.addEnvToNames ? (`${name}-${this.envName}`) : name) : "";
     }
     get envName() {
         return this.env.name || this.env.type || "production";
     }
-    get queueName() {
-        return this.appendEnv(this.moduleOptions.queueName);
+    get connection() {
+        return this._connection;
     }
-    get queueNameRequest() {
-        return `${this.queueName}-request`;
+    getDefaultQueueName() {
+        return this._queues.length ? this._queues[0].name : "";
     }
-    get queueNameReply() {
-        return `${this.queueName}-reply-${uuid.v4()}`;
+    getDefaultRequestQueueName() {
+        return this._requests.length ? this._requests[0].name : "";
+    }
+    getDefaultExchangeName() {
+        return this._exchanges[0].name;
     }
     buildTopology() {
-        let amqp = url.parse(this.moduleOptions.connection);
-        let messageHandlerKeys = [];
-        let replyHandlerKeys = [];
-        if (this.moduleOptions.listener) {
-            messageHandlerKeys = this.handlersManager.keys;
-            replyHandlerKeys = this.repliesManager.keys;
-        }
-        this.moduleOptions.queue.name = this.queueName;
-        this.moduleOptions.requestQueue.name = this.queueNameRequest;
-        this.moduleOptions.exchange.name = this.exchangeName;
-        if (this.moduleOptions.replayQueue) {
-            this.moduleOptions.replayQueue.name = this.queueNameReply;
-        }
+        this._connection = this._createConnection();
+        this._exchanges = this._createExchanges();
+        this._replyQueue = this._createReplyQueue();
+        this._queues = this._createQueues();
+        this._requests = this._createRequestQueues();
+        this._createHandlers(decorators_1.HandlerSymbol, this.handlersManager, this.getDefaultQueueName());
+        this._createHandlers(decorators_1.ReplySymbol, this.repliesManager, this.getDefaultRequestQueueName());
         let config = {
-            connection: {
-                name: this.connectionName,
-                user: amqp.auth.split(":")[0],
-                pass: amqp.auth.split(":")[1],
-                server: amqp.hostname,
-                port: amqp.port || 5672,
-                vhost: amqp.path.substr(1),
-                replyQueue: this.moduleOptions.replayQueue
-            },
-            queues: [this.moduleOptions.queue, this.moduleOptions.requestQueue],
-            exchanges: [this.moduleOptions.exchange],
-            bindings: []
+            connection: this._connection,
+            queues: this._queues,
+            requestQueues: this._requests,
+            replyQueue: this._replyQueue,
+            exchanges: this._exchanges,
+            bindings: this._createBindings()
         };
-        if (messageHandlerKeys.length) {
-            config.bindings.push({
-                exchange: this.exchangeName,
-                target: this.queueName,
-                keys: messageHandlerKeys
-            });
-        }
-        if (replyHandlerKeys.length) {
-            config.bindings.push({
-                exchange: this.exchangeName,
-                target: this.queueNameRequest,
-                keys: replyHandlerKeys
-            });
-        }
         return config;
+    }
+    _createQueues() {
+        let queues = this.moduleOptions.queues || [];
+        if (this.moduleOptions.queue) {
+            queues.unshift(_.isString(this.moduleOptions.queue) ? { name: this.moduleOptions.queue } : this.moduleOptions.queue);
+        }
+        queues = _.map(queues, queue => Object.assign({}, defaults_1.QueueDefaults, queue, { name: this.appendEnv(queue.name) }));
+        return queues;
+    }
+    _createRequestQueues() {
+        let requestQueues = this.moduleOptions.requestQueues || [];
+        if (this.moduleOptions.requestQueue) {
+            requestQueues.unshift(_.isString(this.moduleOptions.requestQueue) ? { name: this.moduleOptions.requestQueue } : this.moduleOptions.requestQueue);
+        }
+        requestQueues = _.map(requestQueues, queue => Object.assign({}, defaults_1.RequestQueueDefaults, queue, { name: this.appendEnv(queue.name) }));
+        return requestQueues;
+    }
+    _createReplyQueue() {
+        let replyQueue = null;
+        if (this.moduleOptions.replyQueue) {
+            replyQueue = _.isString(this.moduleOptions.replyQueue) ? { name: this.moduleOptions.replyQueue } : this.moduleOptions.replyQueue;
+            replyQueue = Object.assign({}, defaults_1.ReplyQueueDefaults, replyQueue, { name: this.appendEnv(replyQueue.name) });
+        }
+        return replyQueue;
+    }
+    _createExchanges() {
+        let exchanges = this.moduleOptions.exchanges || [];
+        if (this.moduleOptions.exchange) {
+            exchanges.unshift(_.isString(this.moduleOptions.exchange) ? { name: this.moduleOptions.exchange } : this.moduleOptions.exchange);
+        }
+        exchanges = _.map(exchanges, exchange => Object.assign({}, defaults_1.ExchangeDefaults, exchange, { name: this.appendEnv(exchange.name) }));
+        return exchanges;
+    }
+    _createConnection() {
+        let connection = this.moduleOptions.connection;
+        if (_.isString(this.moduleOptions.connection)) {
+            connection = { uri: this.moduleOptions.connection };
+        }
+        if (connection.uri) {
+            connection = Object.assign({}, connection, this._parseUri(connection.uri));
+        }
+        return connection;
+    }
+    _parseUri(uri) {
+        let amqp = url.parse(uri);
+        return {
+            username: amqp.auth.split(":")[0],
+            password: amqp.auth.split(":")[1],
+            hostname: amqp.hostname,
+            port: parseInt(amqp.port) || 5672,
+            vhost: amqp.path.substr(1),
+        };
+    }
+    _createBindings() {
+        let messageHandlers = [], replyHandlers = [], bindings = [];
+        if (this.moduleOptions.handleEvents) {
+            messageHandlers = this.handlersManager.getHandlersProperties();
+            replyHandlers = this.repliesManager.getHandlersProperties();
+        }
+        let handlers = messageHandlers.concat(replyHandlers);
+        _.forEach(handlers, handler => {
+            bindings.push({
+                exchange: handler.exchange,
+                queue: handler.queue,
+                keys: [handler.eventName]
+            });
+        });
+        return bindings;
+    }
+    _createHandlers(symbol, manager, defaultQueue) {
+        let exported = index_1.Util.findAllReflectData(symbol, this.app.parent.exported);
+        _.forEach(exported, (item) => this._createHandler(item.fn, item.define, item.metaData, manager, defaultQueue));
+    }
+    _createHandler(fn, define, metaData, manager, defaultQueue) {
+        _.forEach(metaData, handler => {
+            _.forEach(handler.events, item => {
+                let options = item.options || {};
+                let queue = this.appendEnv(options.queue) || defaultQueue, exchange = this.appendEnv(options.exchange) || this.getDefaultExchangeName(), routingKey = options.routingKey || item.eventName;
+                options = Object.assign({}, item.options, { queue, exchange, routingKey });
+                manager.register(item.eventName, options, define, handler.propertyKey);
+            });
+        });
     }
 };
 tslib_1.__decorate([
@@ -80,6 +132,9 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     index_1.inject()
 ], TopologyManager.prototype, "env", void 0);
+tslib_1.__decorate([
+    index_1.inject()
+], TopologyManager.prototype, "app", void 0);
 tslib_1.__decorate([
     index_1.inject()
 ], TopologyManager.prototype, "handlersManager", void 0);

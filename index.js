@@ -1,5 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const appolo_rabbit_1 = require("appolo-rabbit");
+exports.Message = appolo_rabbit_1.Message;
 var busProvider_1 = require("./module/src/bus/busProvider");
 exports.BusProvider = busProvider_1.BusProvider;
 var publisher_1 = require("./module/src/bus/publisher");

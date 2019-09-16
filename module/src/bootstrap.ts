@@ -12,7 +12,7 @@ export class Bootstrap implements IBootstrap {
 
 
     public async run(): Promise<void> {
-        if (this.moduleOptions.auto) {
+        if (this.moduleOptions.autoListen) {
             await this.busProvider.initialize();
         }
     }

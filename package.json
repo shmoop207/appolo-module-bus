@@ -14,11 +14,10 @@
   "dependencies": {
     "@appolo/http": "0.0.3",
     "@appolo/logger": "1.0.5",
-    "appolo": "^6.0.86",
+    "appolo": "^6.0.88",
+    "appolo-rabbit": "github:shmoop207/appolo-rabbit",
     "bluebird": "^3.5.5",
-    "lodash": "^4.17.15",
-    "rabbot": "^2.1.0",
-    "uuid": "^3.3.2"
+    "lodash": "^4.17.15"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.27",
@@ -28,7 +27,6 @@
     "@types/node": "^12.0.8",
     "@types/sinon": "^7.0.13",
     "@types/sinon-chai": "^3.2.2",
-    "@types/uuid": "^3.4.4",
     "chai": "^4.2.0",
     "mocha": "^6.1.4",
     "sinon": "^7.3.2",

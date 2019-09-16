@@ -16,19 +16,23 @@ describe("bus module Spec", function () {
     let app;
     beforeEach(async () => {
         app = appolo_1.createApp({ root: __dirname, environment: "production", port: 8181 });
-        await app.module(new index_1.BusModule({ queueName: "bus-test", connection: process.env.AMPQ, exchangeName: "vidazoo" }));
+        await app.module(new index_1.BusModule({
+            queue: "bus-test",
+            requestQueue: "bus-test-request",
+            connection: process.env.RABBIT,
+            exchange: "vidazoo"
+        }));
         await app.launch();
     });
     afterEach(async () => {
         await app.reset();
     });
-    it("should request reply", async () => {
+    it.only("should request reply", async () => {
         let publisher = app.injector.get(publisher_1.MessagePublisher);
-        //let handler = app.injector.get<MessageHandler>(MessageHandler);
         let data = await publisher.requestMethod("aa");
         data.result.should.be.eq("aaworking");
     });
-    it("should load bus", async () => {
+    it("should load bus and call handle message", async () => {
         let publisher = app.injector.get(publisher_1.MessagePublisher);
         let handler = app.injector.get(handler_1.MessageHandler);
         let spy = sinon.spy(handler, "handle");

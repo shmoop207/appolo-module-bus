@@ -2,13 +2,12 @@ import {define, factory, IEnv, IFactory, inject, singleton} from 'appolo'
 import {IOptions} from "../common/IOptions";
 import {ILogger} from '@appolo/logger';
 import {TopologyManager} from "../topology/topologyManager";
-import rabbit = require("rabbot");
-import {IClient} from "../common/interfaces";
+import {createRabbit, IOptions as RabbitOptions, Rabbit} from "appolo-rabbit";
 
 @define()
 @singleton()
 @factory()
-export class Client implements IFactory<IClient> {
+export class Client implements IFactory<Rabbit> {
 
 
     @inject() private moduleOptions: IOptions;
@@ -17,24 +16,27 @@ export class Client implements IFactory<IClient> {
     @inject() private topologyManager: TopologyManager;
 
 
-    public async get(): Promise<IClient> {
+    public async get(): Promise<Rabbit> {
 
         let config = this.topologyManager.buildTopology();
 
-        this._bindEvents();
 
-        await rabbit.configure(config);
+        let rabbit = await createRabbit(config);
+
+        this._bindEvents(rabbit);
+
+        await rabbit.connect();
 
         return rabbit;
     }
 
 
-    private _bindEvents() {
+    private _bindEvents(rabbit:Rabbit) {
         process.on('exit', function (err) {
             rabbit.close();
         });
 
-        rabbit.on('unreachable', (err) => {
+        rabbit.on('closed', (err) => {
             this.logger.error("connection to rabbit unreachable", {err: err});
             (this.topologyManager.envName != "testing") && process.exit(1);
         });
@@ -44,9 +46,6 @@ export class Client implements IFactory<IClient> {
             (this.topologyManager.envName != "testing") && process.exit(1);
         });
 
-        // rabbit.on('closed', () => {
-        //     this.logger.error("connection to rabbit closed");
-        // });
 
         rabbit.onUnhandled(function (message) {
             message.ack();

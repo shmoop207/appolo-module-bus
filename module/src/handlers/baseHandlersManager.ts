@@ -1,6 +1,7 @@
-import {Define, IApp, initMethod, inject, singleton, Util} from 'appolo'
+import {Define, IApp, initMethod, inject, singleton, Util, injectLazy} from 'appolo'
 import * as _ from "lodash";
-import {IHandler, IHandlerMetadata} from "../common/interfaces";
+import {IHandler, IHandlerMetadata, IHandlerMetadataOptions, IHandlerProperties} from "../common/interfaces";
+import {TopologyManager} from "../topology/topologyManager";
 
 
 @singleton()
@@ -8,48 +9,53 @@ export abstract class BaseHandlersManager {
 
     @inject() private app: IApp;
 
-    private _handlers = new Map<string, IHandler[]>();
+    private _handlers = new Map<string, IHandlerProperties>();
 
-    protected abstract readonly Symbol: Symbol;
-    protected  readonly Uniq: boolean = false;
-
-    @initMethod()
-    protected initialize() {
-
-        let exported = Util.findAllReflectData<IHandlerMetadata>(this.Symbol, this.app.parent.exported);
-
-        _.forEach(exported, (item) => this._createHandler(item.fn, item.define, item.metaData))
-    }
-
-    private _createHandler(fn: Function, define: Define, metaData: IHandlerMetadata) {
+    protected readonly Uniq: boolean = false;
 
 
-        _.forEach(metaData, handler => {
+    public register(eventName: string, options: IHandlerMetadataOptions, define: Define, propertyKey: string) {
 
-            _.forEach(handler.eventNames, eventName => {
+        let key = this._getKey(eventName, options.queue, options.exchange, options.routingKey);
 
-                if(this.Uniq && this._handlers.has(eventName)){
-                    throw new Error(`replay event handler must be uniq for ${eventName}`)
-                }
+        if (this.Uniq && this._handlers.has(key)) {
+            throw new Error(`replay event handler must be uniq for ${eventName}`)
+        }
 
-                if (!this._handlers.has(eventName)) {
-                    this._handlers.set(eventName, []);
-                }
+        if (!this._handlers.has(key)) {
+            this._handlers.set(key, {
+                handlers: [],
+                eventName,
+                exchange: options.exchange,
+                queue: options.queue,
+                routingKey: options.routingKey
+            });
+        }
 
-                this._handlers.get(eventName).push({define, propertyKey: handler.propertyKey});
-            })
+        this._handlers.get(key).handlers.push({
+            define,
+            propertyKey: propertyKey,
         });
     }
 
-    public get keys(): string[] {
-        return Array.from(this._handlers.keys())
+    private _getKey(eventName: string, queue: string, exchange: string, routingKey: string): string {
+        return `${eventName}##${queue}##${exchange}##${routingKey}`
     }
 
-    public getHandlers(key: string): IHandler[] {
-        return this._handlers.get(key) || []
+    public getHandlersProperties(): IHandlerProperties[] {
+        return Array.from(this._handlers.values());
     }
 
-    public clean(){
+    public getHandlers(eventName: string, queue: string, exchange: string, routingKey: string): IHandler[] {
+
+        let key = this._getKey(eventName, queue, exchange, routingKey);
+
+        let handlers = this._handlers.get(key);
+
+        return handlers ? handlers.handlers : [];
+    }
+
+    public clean() {
         this._handlers.clear();
     }
 

@@ -1,5 +1,5 @@
 import {define, inject, Injector, singleton} from "appolo/index";
-import {IClient, IHandler, IMessage} from "../common/interfaces";
+import {IHandler} from "../common/interfaces";
 import {HandlersManager} from "../handlers/handlersManager";
 import {RepliesManager} from "../handlers/repliesManager";
 import {TopologyManager} from "../topology/topologyManager";
@@ -7,12 +7,13 @@ import {ILogger} from "@appolo/logger/index";
 import * as _ from "lodash";
 import {BusProvider} from "../bus/busProvider";
 import {RequestError} from "../common/requestError";
+import {Rabbit, Message, Handler} from "appolo-rabbit";
 
 @define()
 @singleton()
 export class MessageManager {
 
-    @inject() protected client: IClient;
+    @inject() protected client: Rabbit;
     @inject() protected injector: Injector;
     @inject() private handlersManager: HandlersManager;
     @inject() private repliesManager: RepliesManager;
@@ -20,31 +21,23 @@ export class MessageManager {
     @inject() protected logger: ILogger;
     @inject() protected busProvider: BusProvider;
 
-    private _handler: any;
+    private _handler: Handler;
 
     public async initialize() {
 
         this._handler = this.client.handle("#", msg => this._handleMessage(msg));
 
-        if (this.handlersManager.keys.length) {
-            this.client.startSubscription(this.topologyManager.queueName, false, this.topologyManager.connectionName);
+        await this.client.subscribe();
 
-            this.logger.info(`bus handler subscription ${this.handlersManager.keys.join(",")}`);
-        }
+        this.logger.info(`bus handlers subscription ${this.repliesManager.getHandlersProperties().map((item) => item.eventName).join(",")}`);
 
-        if (this.repliesManager.keys.length) {
-
-            this.client.startSubscription(this.topologyManager.queueNameRequest, false, this.topologyManager.connectionName);
-            this.logger.info(`bus reply subscription ${this.repliesManager.keys.join(",")}`);
-        }
+        this.logger.info(`bus reply subscription ${this.repliesManager.getHandlersProperties().map((item) => item.eventName).join(",")}`);
     }
 
 
-    private async _handleMessage(msg: IMessage<any>) {
+    private async _handleMessage(msg: Message<any>) {
 
-        this._extendMessage(msg);
-
-        let handlers = this.handlersManager.getHandlers(msg.type);
+        let handlers = this.handlersManager.getHandlers(msg.type, msg.queue, msg.fields.exchange, msg.fields.routingKey);
 
         //we have handler
         if (handlers.length) {
@@ -52,7 +45,7 @@ export class MessageManager {
             return;
         }
 
-        let replies = this.repliesManager.getHandlers(msg.type);
+        let replies = this.repliesManager.getHandlers(msg.type, msg.queue, msg.fields.exchange, msg.fields.routingKey);
 
         //we have replies
         if (replies.length) {
@@ -65,13 +58,13 @@ export class MessageManager {
 
     }
 
-    private async _callHandler(msg: IMessage<any>, handler: IHandler) {
+    private async _callHandler(msg: Message<any>, handler: IHandler) {
 
         try {
             let instance = this.injector.parent.get(handler.define.definition.id);
 
             await instance[handler.propertyKey](msg);
-            if (!msg.sent) {
+            if (!msg.isAcked) {
                 msg.ack();
             }
 
@@ -79,83 +72,35 @@ export class MessageManager {
 
             this.logger.error(`failed to handle message ${msg.type}`, {err: e, msg: msg});
 
-            if (!msg.sent) {
+            if (!msg.isAcked) {
                 msg.nack();
             }
 
         }
     }
 
-    private async _callReply(msg: IMessage<any>, handler: IHandler) {
+    private async _callReply(msg: Message<any>, handler: IHandler) {
 
         try {
             let instance = this.injector.parent.get(handler.define.definition.id);
 
             let data = await instance[handler.propertyKey](msg);
 
-            if (!msg.sent) {
-                msg.replySuccess(data)
+            if (!msg.isAcked) {
+                msg.replyResolve(data)
             }
 
         } catch (e) {
-            if (!msg.sent) {
-                msg.replyError(e)
+            if (!msg.isAcked) {
+                msg.replyReject(e)
             }
 
         }
     }
 
-    private _extendMessage(msg: IMessage<any>) {
-        let oldAck = msg.ack;
-        let oldReject = msg.reject;
-        let oldNack = msg.nack;
-        let oldReply = msg.reply;
+    public async clean() {
 
-        msg.ack = function () {
-            this.sent = true;
-            return oldAck.apply(this, arguments);
-        };
-
-        msg.reject = function () {
-            this.sent = true;
-            return oldReject.apply(this, arguments);
-        };
-
-        msg.nack = function () {
-            this.sent = true;
-            return oldNack.apply(this, arguments);
-        };
-
-        msg.reply = function () {
-            this.sent = true;
-            return oldReply.apply(this, arguments);
-        };
-
-        msg.replySuccess = function <T>(data?: T) {
-            return this.reply({
-                success: true,
-                data: data
-            })
-        };
-
-        msg.replyError = function <T>(e: RequestError<T>) {
-            return this.reply({
-                success: false,
-                message: e && e.message,
-                data: e && e.data
-            })
-        }
-    }
-
-
-    public clean() {
-        if (this.handlersManager.keys.length) {
-            this.client.stopSubscription(this.topologyManager.queueName, this.topologyManager.connectionName);
-        }
-
-        if (this.repliesManager.keys.length) {
-            this.client.stopSubscription(this.topologyManager.queueNameRequest, this.topologyManager.connectionName);
-        }
+        await this.client.unSubscribe();
 
         this._handler.remove();
 

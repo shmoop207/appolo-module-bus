@@ -2,50 +2,50 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
 const appolo_1 = require("appolo");
-exports.HandlerSymbol = Symbol("HandlerSymbol");
-exports.PublisherSymbol = Symbol("PublisherSymbol");
-exports.RequestSymbol = Symbol("RequestSymbol");
-exports.ReplySymbol = Symbol("ReplySymbol");
-function defineHandler(eventName, symbol) {
+exports.HandlerSymbol = "__HandlerSymbol__";
+exports.PublisherSymbol = "__PublisherSymbol__";
+exports.RequestSymbol = "__RequestSymbol__";
+exports.ReplySymbol = "__ReplySymbol__";
+function defineHandler(eventName, options, symbol) {
     return function (target, propertyKey, descriptor) {
         let data = appolo_1.Util.getReflectData(symbol, target.constructor, {});
         if (!data[propertyKey]) {
             data[propertyKey] = {
-                eventNames: [],
+                events: [],
                 propertyKey,
                 descriptor
             };
         }
-        data[propertyKey].eventNames.push(eventName);
+        data[propertyKey].events.push({ eventName, options: options || {} });
     };
 }
-function definePublisher(eventName, symbol, expire) {
+function definePublisher(eventName, symbol, options) {
     return function (target, propertyKey, descriptor) {
         let data = appolo_1.Util.getReflectData(symbol, target.constructor, {});
         if (!data[propertyKey]) {
             data[propertyKey] = {
                 eventName,
                 propertyKey,
-                expire,
+                options,
                 descriptor
             };
         }
     };
 }
-function handler(eventName) {
-    return defineHandler(eventName, exports.HandlerSymbol);
+function handler(eventName, options) {
+    return defineHandler(eventName, options, exports.HandlerSymbol);
 }
 exports.handler = handler;
-function reply(eventName) {
-    return defineHandler(eventName, exports.ReplySymbol);
+function reply(eventName, options) {
+    return defineHandler(eventName, options, exports.ReplySymbol);
 }
 exports.reply = reply;
-function publisher(eventName, expire) {
-    return definePublisher(eventName, exports.PublisherSymbol, expire);
+function publisher(eventName, options) {
+    return definePublisher(eventName, exports.PublisherSymbol, options);
 }
 exports.publisher = publisher;
-function request(eventName, expire) {
-    return definePublisher(eventName, exports.RequestSymbol, expire);
+function request(eventName, options) {
+    return definePublisher(eventName, exports.RequestSymbol, options);
 }
 exports.request = request;
 //# sourceMappingURL=decorators.js.map

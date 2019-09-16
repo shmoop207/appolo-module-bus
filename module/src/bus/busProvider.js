@@ -2,10 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const appolo_1 = require("appolo");
-const _ = require("lodash");
-const uuid = require("uuid");
-const url = require("url");
-const requestError_1 = require("../common/requestError");
 let BusProvider = class BusProvider {
     constructor() {
         this._inInitialized = false;
@@ -17,72 +13,70 @@ let BusProvider = class BusProvider {
             this.app.once(appolo_1.Events.BeforeReset, () => this.close());
         }
     }
-    publish(type, data, expire) {
-        if (arguments.length > 3) {
-            type = arguments[1];
-            data = arguments[2];
-            expire = arguments[3];
+    publish(opts) {
+        if (arguments.length > 1) {
+            opts = {
+                routingKey: arguments[0],
+                type: arguments[1],
+                data: arguments[2],
+                expire: arguments[3]
+            };
         }
         let params = {
-            messageId: uuid.v4(),
-            type: type,
-            body: data,
-            routingKey: type,
+            type: opts.type,
+            body: opts.data,
+            routingKey: opts.routingKey || opts.type,
             headers: {
-                queue: this.topologyManager.queueName
+                queue: this.topologyManager.appendEnv(opts.queue) || this.topologyManager.getDefaultQueueName()
             }
         };
-        if (expire) {
-            params.expiresAfter = expire;
+        if (opts.expire) {
+            params.expiration = opts.expire;
         }
-        return this.client.publish(this.topologyManager.exchangeName, params, this.topologyManager.connectionName);
+        return this.client.publish(this.topologyManager.appendEnv(opts.exchange) || this.topologyManager.getDefaultExchangeName(), params);
     }
-    async request(type, data, expire) {
-        if (arguments.length > 3) {
-            type = arguments[1];
-            data = arguments[2];
-            expire = arguments[3];
+    async request(opts) {
+        if (arguments.length > 1) {
+            opts = {
+                routingKey: arguments[0],
+                type: arguments[1],
+                data: arguments[2],
+                expire: arguments[3]
+            };
         }
-        expire = expire || this.moduleOptions.replyTimeout;
+        let expire = opts.expire || this.moduleOptions.replyTimeout;
         let params = {
-            messageId: uuid.v4(),
-            type: type,
-            body: data,
-            routingKey: type,
+            type: opts.type,
+            body: opts.data,
+            routingKey: opts.routingKey || opts.type,
             headers: {
-                queue: this.topologyManager.queueName
+                queue: this.topologyManager.appendEnv(opts.queue) || this.topologyManager.getDefaultRequestQueueName()
             }
         };
         if (expire) {
             params.replyTimeout = expire;
-            params.expiresAfter = expire;
+            params.expiration = expire;
         }
-        let msg = await this.client.request(this.topologyManager.exchangeName, params, undefined, this.topologyManager.connectionName);
-        if (msg.body.success) {
-            return msg.body.data;
-        }
-        else {
-            let error = new requestError_1.RequestError(_.isObject(msg.body.message) ? JSON.stringify(msg.body.message) : msg.body.message);
-            error.data = msg.body.data;
-            throw error;
-        }
+        let result = await this.client.request(this.topologyManager.appendEnv(opts.exchange) || this.topologyManager.getDefaultExchangeName(), params);
+        return result;
     }
     async close() {
-        this.messageManager.clean();
-        await this.client.close(this.topologyManager.connectionName, true);
+        await this.messageManager.clean();
+        await this.client.close();
     }
-    async getQueueMessagesCount() {
+    async getQueueMessagesCount(queue) {
+        queue = this.topologyManager.appendEnv(queue) || this.topologyManager.getDefaultQueueName();
         try {
-            let amqp = url.parse(this.moduleOptions.connection);
+            let connection = this.topologyManager.connection;
             let params = {
                 json: true,
-                url: `https://${amqp.auth.split(":")[0]}:${amqp.auth.split(":")[1]}@${amqp.hostname}/api/queues/${amqp.path.substr(1)}/${this.topologyManager.queueName}`
+                url: `https://${connection.username}:${connection.password}@${connection.hostname}/api/queues/${connection.vhost}/${queue}`
             };
             let res = await this.httpService.request(params);
             return res.data.messages;
         }
         catch (e) {
-            this.logger.error(`failed to get messages count from ${this.topologyManager.queueName}`);
+            this.logger.error(`failed to get messages count from ${queue}`);
             throw e;
         }
     }

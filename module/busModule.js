@@ -35,7 +35,7 @@ let BusModule = class BusModule extends appolo_1.Module {
             try {
                 let result = await old.apply(this, arguments);
                 let provider = $self.app.injector.get(busProvider_1.BusProvider);
-                await provider.publish(item.eventName, result, item.expire);
+                await provider.publish(Object.assign({ type: item.eventName, data: result }, item.options));
                 return result;
             }
             catch (e) {
@@ -52,7 +52,7 @@ let BusModule = class BusModule extends appolo_1.Module {
             try {
                 let data = await old.apply(this, arguments);
                 let provider = $self.app.injector.get(busProvider_1.BusProvider);
-                let result = await provider.request(item.eventName, data, item.expire);
+                let result = await provider.request(Object.assign({ type: item.eventName, data }, item.options));
                 return result;
             }
             catch (e) {

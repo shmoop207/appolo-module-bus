@@ -55,7 +55,7 @@ export class BusModule extends Module<IOptions> {
 
                 let provider = $self.app.injector.get<BusProvider>(BusProvider);
 
-                await provider.publish(item.eventName, result, item.expire);
+                await provider.publish({type: item.eventName, data: result, ...item.options});
 
                 return result
 
@@ -82,7 +82,7 @@ export class BusModule extends Module<IOptions> {
 
                 let provider = $self.app.injector.get<BusProvider>(BusProvider);
 
-                let result = await provider.request(item.eventName, data, item.expire);
+                let result = await provider.request({type: item.eventName, data, ...item.options});
 
                 return result
 

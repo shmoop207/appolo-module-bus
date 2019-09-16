@@ -1,4 +1,4 @@
-import {createApp,App} from 'appolo'
+import {createApp, App} from 'appolo'
 import {BusModule, BusProvider} from "../index";
 import {MessagePublisher} from "./src/publisher";
 import {MessageHandler} from "./src/handler";
@@ -15,34 +15,38 @@ function delay(time) {
 
 
 describe("bus module Spec", function () {
-    let app:App;
+    let app: App;
 
-    beforeEach(async ()=>{
-         app = createApp({root: __dirname, environment: "production", port: 8181});
+    beforeEach(async () => {
+        app = createApp({root: __dirname, environment: "production", port: 8181});
 
-        await app.module(new BusModule({queueName: "bus-test", connection: process.env.AMPQ, exchangeName: "vidazoo"}));
+        await app.module(new BusModule({
+            queue: "bus-test",
+            requestQueue: "bus-test-request",
+            connection: process.env.RABBIT,
+            exchange: "vidazoo"
+        }));
 
         await app.launch();
     });
 
-    afterEach(async ()=>{
+    afterEach(async () => {
 
         await app.reset();
     });
 
-    it("should request reply", async () => {
+    it.only("should request reply", async () => {
 
 
         let publisher = app.injector.get<MessagePublisher>(MessagePublisher);
-        //let handler = app.injector.get<MessageHandler>(MessageHandler);
 
         let data = await publisher.requestMethod("aa");
 
         data.result.should.be.eq("aaworking")
 
-    })
+    });
 
-    it("should load bus", async () => {
+    it("should load bus and call handle message", async () => {
 
 
         let publisher = app.injector.get<MessagePublisher>(MessagePublisher);

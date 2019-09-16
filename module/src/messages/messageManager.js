@@ -6,24 +6,18 @@ const _ = require("lodash");
 let MessageManager = class MessageManager {
     async initialize() {
         this._handler = this.client.handle("#", msg => this._handleMessage(msg));
-        if (this.handlersManager.keys.length) {
-            this.client.startSubscription(this.topologyManager.queueName, false, this.topologyManager.connectionName);
-            this.logger.info(`bus handler subscription ${this.handlersManager.keys.join(",")}`);
-        }
-        if (this.repliesManager.keys.length) {
-            this.client.startSubscription(this.topologyManager.queueNameRequest, false, this.topologyManager.connectionName);
-            this.logger.info(`bus reply subscription ${this.repliesManager.keys.join(",")}`);
-        }
+        await this.client.subscribe();
+        this.logger.info(`bus handlers subscription ${this.repliesManager.getHandlersProperties().map((item) => item.eventName).join(",")}`);
+        this.logger.info(`bus reply subscription ${this.repliesManager.getHandlersProperties().map((item) => item.eventName).join(",")}`);
     }
     async _handleMessage(msg) {
-        this._extendMessage(msg);
-        let handlers = this.handlersManager.getHandlers(msg.type);
+        let handlers = this.handlersManager.getHandlers(msg.type, msg.queue, msg.fields.exchange, msg.fields.routingKey);
         //we have handler
         if (handlers.length) {
             await Promise.all(_.map(handlers, handler => this._callHandler(msg, handler)));
             return;
         }
-        let replies = this.repliesManager.getHandlers(msg.type);
+        let replies = this.repliesManager.getHandlers(msg.type, msg.queue, msg.fields.exchange, msg.fields.routingKey);
         //we have replies
         if (replies.length) {
             await this._callReply(msg, replies[0]);
@@ -36,13 +30,13 @@ let MessageManager = class MessageManager {
         try {
             let instance = this.injector.parent.get(handler.define.definition.id);
             await instance[handler.propertyKey](msg);
-            if (!msg.sent) {
+            if (!msg.isAcked) {
                 msg.ack();
             }
         }
         catch (e) {
             this.logger.error(`failed to handle message ${msg.type}`, { err: e, msg: msg });
-            if (!msg.sent) {
+            if (!msg.isAcked) {
                 msg.nack();
             }
         }
@@ -51,58 +45,18 @@ let MessageManager = class MessageManager {
         try {
             let instance = this.injector.parent.get(handler.define.definition.id);
             let data = await instance[handler.propertyKey](msg);
-            if (!msg.sent) {
-                msg.replySuccess(data);
+            if (!msg.isAcked) {
+                msg.replyResolve(data);
             }
         }
         catch (e) {
-            if (!msg.sent) {
-                msg.replyError(e);
+            if (!msg.isAcked) {
+                msg.replyReject(e);
             }
         }
     }
-    _extendMessage(msg) {
-        let oldAck = msg.ack;
-        let oldReject = msg.reject;
-        let oldNack = msg.nack;
-        let oldReply = msg.reply;
-        msg.ack = function () {
-            this.sent = true;
-            return oldAck.apply(this, arguments);
-        };
-        msg.reject = function () {
-            this.sent = true;
-            return oldReject.apply(this, arguments);
-        };
-        msg.nack = function () {
-            this.sent = true;
-            return oldNack.apply(this, arguments);
-        };
-        msg.reply = function () {
-            this.sent = true;
-            return oldReply.apply(this, arguments);
-        };
-        msg.replySuccess = function (data) {
-            return this.reply({
-                success: true,
-                data: data
-            });
-        };
-        msg.replyError = function (e) {
-            return this.reply({
-                success: false,
-                message: e && e.message,
-                data: e && e.data
-            });
-        };
-    }
-    clean() {
-        if (this.handlersManager.keys.length) {
-            this.client.stopSubscription(this.topologyManager.queueName, this.topologyManager.connectionName);
-        }
-        if (this.repliesManager.keys.length) {
-            this.client.stopSubscription(this.topologyManager.queueNameRequest, this.topologyManager.connectionName);
-        }
+    async clean() {
+        await this.client.unSubscribe();
         this._handler.remove();
         this.repliesManager.clean();
         this.handlersManager.clean();

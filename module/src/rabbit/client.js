@@ -2,19 +2,20 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const appolo_1 = require("appolo");
-const rabbit = require("rabbot");
+const appolo_rabbit_1 = require("appolo-rabbit");
 let Client = class Client {
     async get() {
         let config = this.topologyManager.buildTopology();
-        this._bindEvents();
-        await rabbit.configure(config);
+        let rabbit = await appolo_rabbit_1.createRabbit(config);
+        this._bindEvents(rabbit);
+        await rabbit.connect();
         return rabbit;
     }
-    _bindEvents() {
+    _bindEvents(rabbit) {
         process.on('exit', function (err) {
             rabbit.close();
         });
-        rabbit.on('unreachable', (err) => {
+        rabbit.on('closed', (err) => {
             this.logger.error("connection to rabbit unreachable", { err: err });
             (this.topologyManager.envName != "testing") && process.exit(1);
         });
@@ -22,9 +23,6 @@ let Client = class Client {
             this.logger.error("connection to rabbit failed", { err: err });
             (this.topologyManager.envName != "testing") && process.exit(1);
         });
-        // rabbit.on('closed', () => {
-        //     this.logger.error("connection to rabbit closed");
-        // });
         rabbit.onUnhandled(function (message) {
             message.ack();
         });
