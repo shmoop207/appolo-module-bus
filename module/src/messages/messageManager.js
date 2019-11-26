@@ -5,7 +5,11 @@ const index_1 = require("appolo/index");
 const _ = require("lodash");
 let MessageManager = class MessageManager {
     async initialize() {
-        this._handler = this.client.handle("#", msg => this._handleMessage(msg));
+        this._handler = this.client.handle({
+            type: "#",
+            handler: msg => this._handleMessage(msg),
+            queue: this.topologyManager.getDefaultQueueName()
+        });
         await this.client.subscribe();
         this.logger.info(`bus handlers subscription ${this.handlersManager.getHandlersProperties().map((item) => item.eventName).join(",")}`);
         this.logger.info(`bus reply subscription ${this.repliesManager.getHandlersProperties().map((item) => item.eventName).join(",")}`);

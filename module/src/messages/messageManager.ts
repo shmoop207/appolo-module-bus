@@ -25,7 +25,11 @@ export class MessageManager {
 
     public async initialize() {
 
-        this._handler = this.client.handle("#", msg => this._handleMessage(msg));
+        this._handler = this.client.handle({
+            type: "#",
+            handler: msg => this._handleMessage(msg),
+            queue: this.topologyManager.getDefaultQueueName()
+        });
 
         await this.client.subscribe();
 
