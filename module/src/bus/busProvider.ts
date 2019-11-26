@@ -6,6 +6,8 @@ import {HttpService} from '@appolo/http';
 import {Rabbit, IPublishOptions, IRequestOptions} from "appolo-rabbit";
 import {TopologyManager} from "../topology/topologyManager";
 import {MessageManager} from "../messages/messageManager";
+import {PassThrough} from "stream";
+import {IPublishProviderOptions} from "../common/interfaces";
 
 @define()
 @singleton()
@@ -32,66 +34,80 @@ export class BusProvider {
     }
 
     public publish(routingKey: string | Object, type?: string, data?: any, expire?: number): Promise<void>
-    public publish(opts: { routingKey?: string, type: string, data: any, expire?: number, queue?: string, exchange?: string }): Promise<void> {
+    public publish(opts: IPublishProviderOptions): Promise<void> {
 
 
         if (arguments.length > 1) {
             opts = {
-                routingKey : arguments[0],
-                type : arguments[1],
-                data : arguments[2],
-                expire : arguments[3]
+                routingKey: arguments[0],
+                type: arguments[1],
+                data: arguments[2],
+                expire: arguments[3]
             };
         }
+
+        let {params, exchange} = this._createPublishParams(opts);
+
+        return this.client.publish(exchange, params);
+    }
+
+    public async request<T>(routingKey: string | Object, type?: string, data?: any, expire?: number): Promise<T>
+    public async request<T>(opts: IPublishProviderOptions): Promise<T> {
+
+        if (arguments.length > 1) {
+            opts = {
+                routingKey: arguments[0],
+                type: arguments[1],
+                data: arguments[2],
+                expire: arguments[3]
+            };
+        }
+
+        let {params, exchange} = this._createPublishParams(opts);
+
+        if (params.expiration) {
+            (params as IRequestOptions).replyTimeout = params.expiration || this.moduleOptions.replyTimeout;
+        }
+
+        let result = await this.client.request<T>(exchange, params);
+
+        return result;
+    }
+
+    public async requestStream<T>(opts: { routingKey?: string, type: string, data: any, expire?: number, queue?: string, exchange?: string }): Promise<PassThrough> {
+
+        let {params, exchange} = this._createPublishParams(opts);
+
+        if (params.expiration) {
+            (params as IRequestOptions).replyTimeout = params.expiration || this.moduleOptions.replyTimeout;
+        }
+
+        let stream = await this.client.requestStream<T>(exchange, params);
+
+        return stream;
+    }
+
+    private _createPublishParams(opts: IPublishProviderOptions): { params: IPublishOptions, exchange: string } {
+        let queue = this.topologyManager.appendEnv(opts.queue) || this.topologyManager.getDefaultRequestQueueName(),
+            exchange = this.topologyManager.appendEnv(opts.exchange) || this.topologyManager.getDefaultExchangeName();
+
 
         let params: IPublishOptions = {
             type: opts.type,
             body: opts.data,
             routingKey: opts.routingKey || opts.type,
             headers: {
-                queue: this.topologyManager.appendEnv(opts.queue) || this.topologyManager.getDefaultQueueName()
+                queue: queue
             }
+
         };
 
         if (opts.expire) {
             params.expiration = opts.expire;
         }
 
-        return this.client.publish(this.topologyManager.appendEnv(opts.exchange) || this.topologyManager.getDefaultExchangeName(), params);
-    }
+        return {exchange, params}
 
-    public async request<T>(routingKey: string | Object, type?: string, data?: any, expire?: number): Promise<T>
-    public async request<T>(opts: { routingKey?: string, type: string, data: any, expire?: number, queue?: string, exchange?: string }): Promise<T> {
-
-        if (arguments.length > 1) {
-            opts = {
-                routingKey : arguments[0],
-                type : arguments[1],
-                data : arguments[2],
-                expire : arguments[3]
-            };
-        }
-
-        let expire = opts.expire || this.moduleOptions.replyTimeout;
-
-        let params: IRequestOptions = {
-            type: opts.type,
-            body: opts.data,
-            routingKey: opts.routingKey || opts.type,
-            headers: {
-                queue: this.topologyManager.appendEnv(opts.queue) || this.topologyManager.getDefaultRequestQueueName()
-            }
-
-        };
-
-        if (expire) {
-            params.replyTimeout = expire;
-            params.expiration = expire;
-        }
-
-        let result = await this.client.request<T>(this.topologyManager.appendEnv(opts.exchange) || this.topologyManager.getDefaultExchangeName(), params);
-
-        return result;
     }
 
     public async close() {

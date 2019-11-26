@@ -201,7 +201,16 @@ export class TopologyManager {
                     exchange = this.appendEnv(options.exchange) || this.getDefaultExchangeName(),
                     routingKey = options.routingKey || item.eventName;
 
-                options = Object.assign({}, item.options, {queue, exchange, routingKey})
+                if(!queue){
+                    throw new Error(`no queue defined for ${item.eventName}`)
+                }
+
+                if(!exchange){
+                    throw new Error(`no exchange defined for ${item.eventName}`)
+                }
+
+
+                options = Object.assign({}, item.options, {queue, exchange, routingKey});
 
                 manager.register(item.eventName, options, define, handler.propertyKey)
             })

@@ -61,3 +61,12 @@ export interface IPublisherMetaOptions {
     exchange?: string
     routingKey: string
 }
+
+export interface IPublishProviderOptions {
+    routingKey?: string,
+    type: string,
+    data?: any,
+    expire?: number,
+    queue?: string,
+    exchange?: string
+}

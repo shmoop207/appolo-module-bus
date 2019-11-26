@@ -22,18 +22,8 @@ let BusProvider = class BusProvider {
                 expire: arguments[3]
             };
         }
-        let params = {
-            type: opts.type,
-            body: opts.data,
-            routingKey: opts.routingKey || opts.type,
-            headers: {
-                queue: this.topologyManager.appendEnv(opts.queue) || this.topologyManager.getDefaultQueueName()
-            }
-        };
-        if (opts.expire) {
-            params.expiration = opts.expire;
-        }
-        return this.client.publish(this.topologyManager.appendEnv(opts.exchange) || this.topologyManager.getDefaultExchangeName(), params);
+        let { params, exchange } = this._createPublishParams(opts);
+        return this.client.publish(exchange, params);
     }
     async request(opts) {
         if (arguments.length > 1) {
@@ -44,21 +34,35 @@ let BusProvider = class BusProvider {
                 expire: arguments[3]
             };
         }
-        let expire = opts.expire || this.moduleOptions.replyTimeout;
+        let { params, exchange } = this._createPublishParams(opts);
+        if (params.expiration) {
+            params.replyTimeout = params.expiration || this.moduleOptions.replyTimeout;
+        }
+        let result = await this.client.request(exchange, params);
+        return result;
+    }
+    async requestStream(opts) {
+        let { params, exchange } = this._createPublishParams(opts);
+        if (params.expiration) {
+            params.replyTimeout = params.expiration || this.moduleOptions.replyTimeout;
+        }
+        let stream = await this.client.requestStream(exchange, params);
+        return stream;
+    }
+    _createPublishParams(opts) {
+        let queue = this.topologyManager.appendEnv(opts.queue) || this.topologyManager.getDefaultRequestQueueName(), exchange = this.topologyManager.appendEnv(opts.exchange) || this.topologyManager.getDefaultExchangeName();
         let params = {
             type: opts.type,
             body: opts.data,
             routingKey: opts.routingKey || opts.type,
             headers: {
-                queue: this.topologyManager.appendEnv(opts.queue) || this.topologyManager.getDefaultRequestQueueName()
+                queue: queue
             }
         };
-        if (expire) {
-            params.replyTimeout = expire;
-            params.expiration = expire;
+        if (opts.expire) {
+            params.expiration = opts.expire;
         }
-        let result = await this.client.request(this.topologyManager.appendEnv(opts.exchange) || this.topologyManager.getDefaultExchangeName(), params);
-        return result;
+        return { exchange, params };
     }
     async close() {
         await this.messageManager.clean();

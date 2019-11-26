@@ -120,6 +120,12 @@ let TopologyManager = class TopologyManager {
             _.forEach(handler.events, item => {
                 let options = item.options || {};
                 let queue = this.appendEnv(options.queue) || defaultQueue, exchange = this.appendEnv(options.exchange) || this.getDefaultExchangeName(), routingKey = options.routingKey || item.eventName;
+                if (!queue) {
+                    throw new Error(`no queue defined for ${item.eventName}`);
+                }
+                if (!exchange) {
+                    throw new Error(`no exchange defined for ${item.eventName}`);
+                }
                 options = Object.assign({}, item.options, { queue, exchange, routingKey });
                 manager.register(item.eventName, options, define, handler.propertyKey);
             });

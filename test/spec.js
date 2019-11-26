@@ -19,6 +19,7 @@ describe("bus module Spec", function () {
         await app.module(new index_1.BusModule({
             queue: "bus-test",
             requestQueue: "bus-test-request",
+            replyQueue: "bus-test-reply",
             connection: process.env.RABBIT,
             exchange: "vidazoo"
         }));

@@ -23,6 +23,7 @@ describe("bus module Spec", function () {
         await app.module(new BusModule({
             queue: "bus-test",
             requestQueue: "bus-test-request",
+            replyQueue: "bus-test-reply",
             connection: process.env.RABBIT,
             exchange: "vidazoo"
         }));

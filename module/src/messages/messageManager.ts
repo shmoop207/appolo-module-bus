@@ -29,7 +29,7 @@ export class MessageManager {
 
         await this.client.subscribe();
 
-        this.logger.info(`bus handlers subscription ${this.repliesManager.getHandlersProperties().map((item) => item.eventName).join(",")}`);
+        this.logger.info(`bus handlers subscription ${this.handlersManager.getHandlersProperties().map((item) => item.eventName).join(",")}`);
 
         this.logger.info(`bus reply subscription ${this.repliesManager.getHandlersProperties().map((item) => item.eventName).join(",")}`);
     }
