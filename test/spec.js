@@ -15,7 +15,7 @@ function delay(time) {
 describe("bus module Spec", function () {
     let app;
     beforeEach(async () => {
-        app = appolo_1.createApp({ root: __dirname, environment: "production", port: 8181 });
+        app = appolo_1.createApp({ root: __dirname, environment: "testing", port: 8181 });
         await app.module(new index_1.BusModule({
             queue: "bus-test",
             requestQueue: "bus-test-request",
@@ -26,9 +26,11 @@ describe("bus module Spec", function () {
         await app.launch();
     });
     afterEach(async () => {
+        let busProvider = app.injector.get(index_1.BusProvider);
+        await busProvider.close();
         await app.reset();
     });
-    it.only("should request reply", async () => {
+    it("should request reply", async () => {
         let publisher = app.injector.get(publisher_1.MessagePublisher);
         let data = await publisher.requestMethod("aa");
         data.result.should.be.eq("aaworking");

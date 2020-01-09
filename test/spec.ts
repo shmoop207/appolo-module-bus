@@ -18,7 +18,7 @@ describe("bus module Spec", function () {
     let app: App;
 
     beforeEach(async () => {
-        app = createApp({root: __dirname, environment: "production", port: 8181});
+        app = createApp({root: __dirname, environment: "testing", port: 8181});
 
         await app.module(new BusModule({
             queue: "bus-test",
@@ -33,10 +33,14 @@ describe("bus module Spec", function () {
 
     afterEach(async () => {
 
+        let busProvider = app.injector.get<BusProvider>(BusProvider);
+
+        await busProvider.close();
+
         await app.reset();
     });
 
-    it.only("should request reply", async () => {
+    it("should request reply", async () => {
 
 
         let publisher = app.injector.get<MessagePublisher>(MessagePublisher);

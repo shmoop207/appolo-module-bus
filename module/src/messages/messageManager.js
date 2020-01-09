@@ -10,24 +10,27 @@ let MessageManager = class MessageManager {
             handler: msg => this._handleMessage(msg),
             queue: this.topologyManager.getDefaultQueueName()
         });
+        this._handlerRequest = this.client.handle({
+            type: "#",
+            handler: msg => this._handleRequestMessage(msg),
+            queue: this.topologyManager.getDefaultRequestQueueName()
+        });
         await this.client.subscribe();
         this.logger.info(`bus handlers subscription ${this.handlersManager.getHandlersProperties().map((item) => item.eventName).join(",")}`);
         this.logger.info(`bus reply subscription ${this.repliesManager.getHandlersProperties().map((item) => item.eventName).join(",")}`);
     }
-    async _handleMessage(msg) {
-        let handlers = this.handlersManager.getHandlers(msg.type, msg.queue, msg.fields.exchange, msg.fields.routingKey);
-        //we have handler
-        if (handlers.length) {
-            await Promise.all(_.map(handlers, handler => this._callHandler(msg, handler)));
-            return;
-        }
+    async _handleRequestMessage(msg) {
         let replies = this.repliesManager.getHandlers(msg.type, msg.queue, msg.fields.exchange, msg.fields.routingKey);
-        //we have replies
         if (replies.length) {
             await this._callReply(msg, replies[0]);
-            return;
         }
-        //ack the message if do not have  a handler
+        msg.ack();
+    }
+    async _handleMessage(msg) {
+        let handlers = this.handlersManager.getHandlers(msg.type, msg.queue, msg.fields.exchange, msg.fields.routingKey);
+        if (handlers.length) {
+            await Promise.all(_.map(handlers, handler => this._callHandler(msg, handler)));
+        }
         msg.ack();
     }
     async _callHandler(msg, handler) {
@@ -62,6 +65,7 @@ let MessageManager = class MessageManager {
     async clean() {
         await this.client.unSubscribe();
         this._handler.remove();
+        this._handlerRequest.remove();
         this.repliesManager.clean();
         this.handlersManager.clean();
         this._handler = null;

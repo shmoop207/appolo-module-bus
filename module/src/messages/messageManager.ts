@@ -22,6 +22,7 @@ export class MessageManager {
     @inject() protected busProvider: BusProvider;
 
     private _handler: Handler;
+    private _handlerRequest: Handler;
 
     public async initialize() {
 
@@ -31,6 +32,12 @@ export class MessageManager {
             queue: this.topologyManager.getDefaultQueueName()
         });
 
+        this._handlerRequest = this.client.handle({
+            type: "#",
+            handler: msg => this._handleRequestMessage(msg),
+            queue: this.topologyManager.getDefaultRequestQueueName()
+        });
+
         await this.client.subscribe();
 
         this.logger.info(`bus handlers subscription ${this.handlersManager.getHandlersProperties().map((item) => item.eventName).join(",")}`);
@@ -38,28 +45,26 @@ export class MessageManager {
         this.logger.info(`bus reply subscription ${this.repliesManager.getHandlersProperties().map((item) => item.eventName).join(",")}`);
     }
 
+    private async _handleRequestMessage(msg: Message<any>) {
+
+        let replies = this.repliesManager.getHandlers(msg.type, msg.queue, msg.fields.exchange, msg.fields.routingKey);
+
+        if (replies.length) {
+            await this._callReply(msg, replies[0]);
+        }
+
+        msg.ack();
+    }
 
     private async _handleMessage(msg: Message<any>) {
 
         let handlers = this.handlersManager.getHandlers(msg.type, msg.queue, msg.fields.exchange, msg.fields.routingKey);
 
-        //we have handler
         if (handlers.length) {
             await Promise.all(_.map(handlers, handler => this._callHandler(msg, handler)));
-            return;
         }
 
-        let replies = this.repliesManager.getHandlers(msg.type, msg.queue, msg.fields.exchange, msg.fields.routingKey);
-
-        //we have replies
-        if (replies.length) {
-            await this._callReply(msg, replies[0]);
-            return;
-        }
-
-        //ack the message if do not have  a handler
         msg.ack();
-
     }
 
     private async _callHandler(msg: Message<any>, handler: IHandler) {
@@ -107,6 +112,7 @@ export class MessageManager {
         await this.client.unSubscribe();
 
         this._handler.remove();
+        this._handlerRequest.remove();
 
         this.repliesManager.clean();
         this.handlersManager.clean();
