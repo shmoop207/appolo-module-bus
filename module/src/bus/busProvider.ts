@@ -33,7 +33,7 @@ export class BusProvider {
         }
     }
 
-    public publish(routingKey: string | Object, type?: string, data?: any, expire?: number): Promise<void>
+    public publish(routingKey: string | IPublishProviderOptions, type?: string, data?: any, expire?: number): Promise<void>
     public publish(opts: IPublishProviderOptions): Promise<void> {
 
 
