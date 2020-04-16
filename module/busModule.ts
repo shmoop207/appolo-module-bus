@@ -15,6 +15,10 @@ export class BusModule extends Module<IOptions> {
         super(options)
     }
 
+    public static for(options: IOptions): BusModule {
+        return new BusModule(options)
+    }
+
     public get defaults(): Partial<IOptions> {
         return Defaults
     }

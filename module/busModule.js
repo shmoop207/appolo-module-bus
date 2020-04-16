@@ -1,4 +1,5 @@
 "use strict";
+var BusModule_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const appolo_1 = require("appolo");
@@ -6,9 +7,12 @@ const busProvider_1 = require("./src/bus/busProvider");
 const defaults_1 = require("./src/common/defaults");
 const decorators_1 = require("./src/common/decorators");
 const _ = require("lodash");
-let BusModule = class BusModule extends appolo_1.Module {
+let BusModule = BusModule_1 = class BusModule extends appolo_1.Module {
     constructor(options) {
         super(options);
+    }
+    static for(options) {
+        return new BusModule_1(options);
     }
     get defaults() {
         return defaults_1.Defaults;
@@ -63,7 +67,7 @@ let BusModule = class BusModule extends appolo_1.Module {
         };
     }
 };
-BusModule = tslib_1.__decorate([
+BusModule = BusModule_1 = tslib_1.__decorate([
     appolo_1.module()
 ], BusModule);
 exports.BusModule = BusModule;
