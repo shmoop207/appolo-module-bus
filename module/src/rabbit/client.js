@@ -12,17 +12,6 @@ let Client = class Client {
         return rabbit;
     }
     _bindEvents(rabbit) {
-        process.on('exit', function (err) {
-            rabbit.close();
-        });
-        rabbit.on('closed', (err) => {
-            this.logger.error("connection to rabbit unreachable", { err: err });
-            (this.topologyManager.envName != "testing") && process.exit(1);
-        });
-        rabbit.on('failed', (err) => {
-            this.logger.error("connection to rabbit failed", { err: err });
-            (this.topologyManager.envName != "testing") && process.exit(1);
-        });
         rabbit.onUnhandled(function (message) {
             message.ack();
         });

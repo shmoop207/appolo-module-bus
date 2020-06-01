@@ -5,13 +5,29 @@ const appolo_1 = require("appolo");
 let BusProvider = class BusProvider {
     constructor() {
         this._inInitialized = false;
+        this._isClosed = false;
     }
     async initialize() {
-        if (!this._inInitialized) {
-            await this.messageManager.initialize();
-            this._inInitialized = true;
-            this.app.once(appolo_1.Events.BeforeReset, () => this.close());
+        if (this._inInitialized) {
+            return;
         }
+        await this.messageManager.initialize();
+        this._inInitialized = true;
+        this.app.once(appolo_1.Events.BeforeReset, () => this.close());
+        process.on('exit', () => this.close());
+        this.client.on('closed', this._onRabbitClosed, this);
+        this.client.on('failed', this._onRabbitFailed, this);
+    }
+    _onRabbitClosed(err) {
+        if (this._isClosed) {
+            return;
+        }
+        this.logger.error("connection to rabbit unreachable", { err: err });
+        (this.topologyManager.envName != "testing") && process.exit(1);
+    }
+    _onRabbitFailed(err) {
+        this.logger.error("connection to rabbit failed", { err: err });
+        (this.topologyManager.envName != "testing") && process.exit(1);
     }
     publish(opts) {
         if (arguments.length > 1) {
@@ -65,6 +81,10 @@ let BusProvider = class BusProvider {
         return { exchange, params };
     }
     async close() {
+        if (this._isClosed) {
+            return;
+        }
+        this._isClosed = true;
         await this.messageManager.clean();
         await this.client.close();
     }

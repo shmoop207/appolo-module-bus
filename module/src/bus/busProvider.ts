@@ -23,14 +23,39 @@ export class BusProvider {
 
     private _inInitialized: boolean = false;
 
+    private _isClosed = false;
+
     public async initialize() {
 
-        if (!this._inInitialized) {
-            await this.messageManager.initialize();
-            this._inInitialized = true;
-
-            this.app.once(Events.BeforeReset, () => this.close())
+        if (this._inInitialized) {
+            return;
         }
+        await this.messageManager.initialize();
+        this._inInitialized = true;
+
+        this.app.once(Events.BeforeReset, () => this.close())
+
+        process.on('exit', () => this.close());
+
+        this.client.on('closed', this._onRabbitClosed, this);
+
+        this.client.on('failed', this._onRabbitFailed, this);
+
+    }
+
+    private _onRabbitClosed(err: Error) {
+
+        if (this._isClosed) {
+            return;
+        }
+
+        this.logger.error("connection to rabbit unreachable", {err: err});
+        (this.topologyManager.envName != "testing") && process.exit(1);
+    }
+
+    private _onRabbitFailed(err: Error) {
+        this.logger.error("connection to rabbit failed", {err: err});
+        (this.topologyManager.envName != "testing") && process.exit(1);
     }
 
     public publish(routingKey: string | IPublishProviderOptions, type?: string, data?: any, expire?: number): Promise<void>
@@ -111,6 +136,13 @@ export class BusProvider {
     }
 
     public async close() {
+
+        if (this._isClosed) {
+            return;
+        }
+
+        this._isClosed = true;
+
         await this.messageManager.clean();
 
         await this.client.close();
