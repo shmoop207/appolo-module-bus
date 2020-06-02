@@ -40,9 +40,18 @@ export class MessageManager {
 
         await this.client.subscribe();
 
-        this.logger.info(`bus handlers subscription ${this.handlersManager.getHandlersProperties().map((item) => item.eventName).join(",")}`);
+        let handlers = this.handlersManager.getHandlersProperties();
 
-        this.logger.info(`bus reply subscription ${this.repliesManager.getHandlersProperties().map((item) => item.eventName).join(",")}`);
+        if (handlers.length) {
+            this.logger.info(`bus handlers subscription ${handlers.map((item) => item.eventName).join(",")}`);
+        }
+
+        let replyHandlers = this.repliesManager.getHandlersProperties()
+
+        if (replyHandlers.length) {
+            this.logger.info(`bus reply subscription ${replyHandlers.map((item) => item.eventName).join(",")}`);
+        }
+
     }
 
     private async _handleRequestMessage(msg: Message<any>) {

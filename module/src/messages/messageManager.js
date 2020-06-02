@@ -18,8 +18,14 @@ let MessageManager = /** @class */ (() => {
                 queue: this.topologyManager.getDefaultRequestQueueName()
             });
             await this.client.subscribe();
-            this.logger.info(`bus handlers subscription ${this.handlersManager.getHandlersProperties().map((item) => item.eventName).join(",")}`);
-            this.logger.info(`bus reply subscription ${this.repliesManager.getHandlersProperties().map((item) => item.eventName).join(",")}`);
+            let handlers = this.handlersManager.getHandlersProperties();
+            if (handlers.length) {
+                this.logger.info(`bus handlers subscription ${handlers.map((item) => item.eventName).join(",")}`);
+            }
+            let replyHandlers = this.repliesManager.getHandlersProperties();
+            if (replyHandlers.length) {
+                this.logger.info(`bus reply subscription ${replyHandlers.map((item) => item.eventName).join(",")}`);
+            }
         }
         async _handleRequestMessage(msg) {
             let replies = this.repliesManager.getHandlers(msg.type, msg.queue, msg.fields.exchange, msg.fields.routingKey);
