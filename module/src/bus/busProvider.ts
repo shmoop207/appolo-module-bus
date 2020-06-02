@@ -7,6 +7,7 @@ import {Rabbit, IPublishOptions, IRequestOptions} from "appolo-rabbit";
 import {TopologyManager} from "../topology/topologyManager";
 import {MessageManager} from "../messages/messageManager";
 import {PassThrough} from "stream";
+import {Promises} from "appolo-utils";
 import {IPublishProviderOptions} from "../common/interfaces";
 
 @define()
@@ -25,6 +26,8 @@ export class BusProvider {
 
     private _isClosed = false;
 
+    private _connectionRetries: number = 0;
+
     public async initialize() {
 
         if (this._inInitialized) {
@@ -38,9 +41,14 @@ export class BusProvider {
         process.on('exit', () => this.close());
 
         this.client.on('closed', this._onRabbitClosed, this);
-
         this.client.on('failed', this._onRabbitFailed, this);
+        this.client.on('connected', this._onRabbitConnected, this);
 
+    }
+
+    private _onRabbitConnected() {
+        this._connectionRetries = 0;
+        this._isClosed = false;
     }
 
     private _onRabbitClosed(err: Error) {
@@ -53,9 +61,25 @@ export class BusProvider {
         (this.topologyManager.envName != "testing") && process.exit(1);
     }
 
-    private _onRabbitFailed(err: Error) {
+    private async _onRabbitFailed(err: Error) {
         this.logger.error("connection to rabbit failed", {err: err});
-        (this.topologyManager.envName != "testing") && process.exit(1);
+
+        if (this._connectionRetries < this.moduleOptions.connectionRetries) {
+
+            this.logger.error(`connection to rabbit failed reconnecting attempt: ${this._connectionRetries}`, {err: err});
+
+            this._connectionRetries++;
+
+            let [e] = await Promises.to<any, Error>(this.client.reconnect());
+
+            if (e) {
+                this._onRabbitFailed(e);
+            }
+
+        } else {
+            (this.topologyManager.envName != "testing") && process.exit(1);
+        }
+
     }
 
     public publish(routingKey: string | IPublishProviderOptions, type?: string, data?: any, expire?: number): Promise<void>

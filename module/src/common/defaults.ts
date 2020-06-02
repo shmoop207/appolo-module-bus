@@ -7,6 +7,7 @@ export const Defaults: Partial<IOptions> = {
     autoListen: true,
     addEnvToNames: true,
     replyTimeout: 1000 * 60 * 5,
+    connectionRetries: 0
 }
 
 export const ExchangeDefaults: Partial<IExchangeOptions> = {

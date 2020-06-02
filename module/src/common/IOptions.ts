@@ -15,4 +15,5 @@ export interface IOptions extends IModuleOptions {
     requestQueues?: IQueueOptions[]
     replyQueue?: string | IQueueOptions
     replyTimeout?: number
+    connectionRetries?:number
 }

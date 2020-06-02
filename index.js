@@ -1,18 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.params = exports.Message = void 0;
 const appolo_rabbit_1 = require("appolo-rabbit");
-exports.Message = appolo_rabbit_1.Message;
+Object.defineProperty(exports, "Message", { enumerable: true, get: function () { return appolo_rabbit_1.Message; } });
 var busProvider_1 = require("./module/src/bus/busProvider");
-exports.BusProvider = busProvider_1.BusProvider;
+Object.defineProperty(exports, "BusProvider", { enumerable: true, get: function () { return busProvider_1.BusProvider; } });
 var publisher_1 = require("./module/src/bus/publisher");
-exports.Publisher = publisher_1.Publisher;
+Object.defineProperty(exports, "Publisher", { enumerable: true, get: function () { return publisher_1.Publisher; } });
 var decorators_1 = require("./module/src/common/decorators");
-exports.reply = decorators_1.reply;
-exports.request = decorators_1.request;
-exports.publisher = decorators_1.publisher;
-exports.handler = decorators_1.handler;
+Object.defineProperty(exports, "reply", { enumerable: true, get: function () { return decorators_1.reply; } });
+Object.defineProperty(exports, "request", { enumerable: true, get: function () { return decorators_1.request; } });
+Object.defineProperty(exports, "publisher", { enumerable: true, get: function () { return decorators_1.publisher; } });
+Object.defineProperty(exports, "handler", { enumerable: true, get: function () { return decorators_1.handler; } });
 var busModule_1 = require("./module/busModule");
-exports.BusModule = busModule_1.BusModule;
+Object.defineProperty(exports, "BusModule", { enumerable: true, get: function () { return busModule_1.BusModule; } });
 function params(data) {
     return data;
 }

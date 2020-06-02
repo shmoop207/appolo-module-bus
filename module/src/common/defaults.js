@@ -1,11 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ReplyQueueDefaults = exports.RequestQueueDefaults = exports.QueueDefaults = exports.ExchangeDefaults = exports.Defaults = void 0;
 exports.Defaults = {
     id: "busProvider",
     handleEvents: true,
     autoListen: true,
     addEnvToNames: true,
     replyTimeout: 1000 * 60 * 5,
+    connectionRetries: 0
 };
 exports.ExchangeDefaults = {
     type: "topic",
