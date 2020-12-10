@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import {Util} from 'appolo';
+import {Reflector} from '@appolo/utils';
 import {IHandlerMetadata, IHandlerMetadataOptions, IPublisherMetadata, IPublisherMetaOptions} from "./interfaces";
 
 export const HandlerSymbol = "__HandlerSymbol__";
@@ -11,7 +11,7 @@ export const ReplySymbol = "__ReplySymbol__";
 function defineHandler(eventName: string, options: IHandlerMetadataOptions, symbol: string) {
     return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
 
-        let data = Util.getReflectData<IHandlerMetadata>(symbol, target.constructor, {});
+        let data = Reflector.getFnMetadata<IHandlerMetadata>(symbol, target.constructor, {});
 
 
         if (!data[propertyKey]) {
@@ -30,7 +30,7 @@ function defineHandler(eventName: string, options: IHandlerMetadataOptions, symb
 function definePublisher(eventName, symbol: string, options?: IPublisherMetaOptions) {
     return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
 
-        let data = Util.getReflectData<IPublisherMetadata>(symbol, target.constructor, {});
+        let data = Reflector.getFnMetadata<IPublisherMetadata>(symbol, target.constructor, {});
 
         if (!data[propertyKey]) {
             data[propertyKey] = {

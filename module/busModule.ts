@@ -1,4 +1,4 @@
-import {module, Module, Util} from 'appolo';
+import {module, Module,IModuleParams} from '@appolo/engine';
 import {IOptions} from "./src/common/IOptions";
 
 import {BusProvider} from "./src/bus/busProvider";
@@ -6,17 +6,16 @@ import {Defaults} from "./src/common/defaults";
 import {IPublisherMetadata, PublisherMeta} from "./src/common/interfaces";
 import {PublisherSymbol, RequestSymbol} from "./src/common/decorators";
 import {ILogger} from '@appolo/logger';
+import {Reflector} from '@appolo/utils';
 import * as _ from 'lodash';
 
 @module()
 export class BusModule extends Module<IOptions> {
 
-    constructor(options: IOptions) {
-        super(options)
-    }
 
-    public static for(options: IOptions): BusModule {
-        return new BusModule(options)
+
+    public static for(options?: IOptions): IModuleParams {
+        return {type:BusModule,options};
     }
 
     public get defaults(): Partial<IOptions> {
@@ -27,10 +26,10 @@ export class BusModule extends Module<IOptions> {
         return [{id: this.moduleOptions.id, type: BusProvider}];
     }
 
-    public beforeInitialize() {
+    public beforeModuleInitialize() {
 
-        let publisherMeta = Util.findAllReflectData<IPublisherMetadata>(PublisherSymbol, this.app.parent.exported);
-        let requestMeta = Util.findAllReflectData<IPublisherMetadata>(RequestSymbol, this.app.parent.exported);
+        let publisherMeta = this.app.tree.parent.discovery.findAllReflectData<IPublisherMetadata>(PublisherSymbol);
+        let requestMeta = this.app.tree.parent.discovery.findAllReflectData<IPublisherMetadata>(RequestSymbol);
 
         _.forEach(publisherMeta, (item => this._createPublishers(item)));
         _.forEach(requestMeta, (item => this._createRequests(item)));

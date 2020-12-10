@@ -1,4 +1,5 @@
-import {define, IEnv, inject, singleton, Util, Define, App} from "appolo/index";
+import {define, inject, singleton, Util, Define} from "@appolo/inject";
+import {IEnv,App} from "@appolo/core";
 import {IOptions} from "../common/IOptions";
 import * as _ from "lodash";
 import {HandlersManager} from "../handlers/handlersManager";
@@ -37,7 +38,7 @@ export class TopologyManager {
     }
 
     public get envName(): string {
-        return this.env.name || this.env.type || "production";
+        return (this.env as any).name || this.env.type || "production";
     }
 
     public get connection(): IConnectionOptions {
@@ -183,7 +184,7 @@ export class TopologyManager {
 
     private _createHandlers(symbol: string, manager: BaseHandlersManager, defaultQueue: string) {
 
-        let exported = Util.findAllReflectData<IHandlerMetadata>(symbol, this.app.parent.exported);
+        let exported =  this.app.tree.parent.discovery.findAllReflectData<IHandlerMetadata>(symbol);
 
         _.forEach(exported, (item) => this._createHandler(item.fn, item.define, item.metaData, manager, defaultQueue))
     }

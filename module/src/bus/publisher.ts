@@ -1,4 +1,4 @@
-import {inject} from "appolo/index";
+import {inject} from "@appolo/inject";
 import {BusProvider} from "./busProvider";
 
 export class Publisher {

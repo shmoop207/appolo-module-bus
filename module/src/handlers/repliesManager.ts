@@ -1,4 +1,4 @@
-import {define, singleton, inject} from 'appolo'
+import {define, singleton, inject} from '@appolo/inject'
 import {ReplySymbol} from "../common/decorators";
 import {BaseHandlersManager} from "./baseHandlersManager";
 import {TopologyManager} from "../topology/topologyManager";

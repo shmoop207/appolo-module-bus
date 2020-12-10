@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const appolo_1 = require("appolo");
+const core_1 = require("@appolo/core");
 const index_1 = require("../index");
 const publisher_1 = require("./src/publisher");
 const handler_1 = require("./src/handler");
@@ -15,8 +15,8 @@ function delay(time) {
 describe("bus module Spec", function () {
     let app;
     beforeEach(async () => {
-        app = appolo_1.createApp({ root: __dirname, environment: "testing", port: 8181 });
-        await app.module(new index_1.BusModule({
+        app = core_1.createApp({ root: __dirname, environment: "testing", port: 8181 });
+        await app.module.use(index_1.BusModule.for({
             queue: "bus-test",
             requestQueue: "bus-test-request",
             replyQueue: "bus-test-reply",

@@ -1,7 +1,6 @@
-import {IModuleOptions} from 'appolo';
 import {IExchangeOptions, IQueueOptions, IConnectionOptions} from "appolo-rabbit";
 
-export interface IOptions extends IModuleOptions {
+export interface IOptions  {
     id?: string;
     connection: string | IConnectionOptions;
     autoListen?: boolean;

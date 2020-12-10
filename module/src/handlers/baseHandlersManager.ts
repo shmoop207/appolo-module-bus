@@ -1,4 +1,5 @@
-import {Define, IApp, initMethod, inject, singleton, Util, injectLazy} from 'appolo'
+import {Define, inject, singleton} from '@appolo/inject'
+import {IApp} from '@appolo/core'
 import * as _ from "lodash";
 import {IHandler, IHandlerMetadata, IHandlerMetadataOptions, IHandlerProperties} from "../common/interfaces";
 import {TopologyManager} from "../topology/topologyManager";

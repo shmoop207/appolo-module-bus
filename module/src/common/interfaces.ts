@@ -1,4 +1,4 @@
-import {Define} from "appolo/index";
+import {Define} from "@appolo/inject";
 import {RequestError} from "./requestError";
 
 // export interface IClient {

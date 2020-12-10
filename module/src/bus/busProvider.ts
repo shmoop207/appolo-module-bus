@@ -1,5 +1,6 @@
 "use strict";
-import {define, inject, singleton, App, Events} from 'appolo'
+import {define, inject, singleton} from '@appolo/inject'
+import {App} from '@appolo/core'
 import {IOptions} from "../common/IOptions";
 import {ILogger} from '@appolo/logger';
 import {HttpService} from '@appolo/http';
@@ -7,7 +8,7 @@ import {Rabbit, IPublishOptions, IRequestOptions} from "appolo-rabbit";
 import {TopologyManager} from "../topology/topologyManager";
 import {MessageManager} from "../messages/messageManager";
 import {PassThrough} from "stream";
-import {Promises} from "appolo-utils";
+import {Promises} from "@appolo/utils";
 import {IPublishProviderOptions} from "../common/interfaces";
 
 @define()
@@ -36,7 +37,7 @@ export class BusProvider {
         await this.messageManager.initialize();
         this._inInitialized = true;
 
-        this.app.once(Events.BeforeReset, () => this.close())
+        this.app.event.beforeReset.once( () => this.close())
 
         process.on('exit', () => this.close());
 

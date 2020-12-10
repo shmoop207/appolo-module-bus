@@ -1,6 +1,7 @@
-import {bootstrap, define, IBootstrap, inject, singleton} from 'appolo'
+import { define, inject, singleton} from '@appolo/inject'
 import {BusProvider} from "./bus/busProvider";
 import {IOptions} from "./common/IOptions";
+import {IBootstrap,bootstrap} from "@appolo/engine";
 
 @define()
 @singleton()

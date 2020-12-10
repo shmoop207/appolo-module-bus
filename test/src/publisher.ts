@@ -1,4 +1,4 @@
-import {define, singleton} from 'appolo'
+import {define, singleton} from '@appolo/inject'
 import {publisher, request, params,Publisher} from "../../index";
 
 @define()

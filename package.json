@@ -1,6 +1,6 @@
 {
   "name": "@appolo/bus",
-  "version": "7.0.6",
+  "version": "8.0.0",
   "description": "appolo bus module",
   "publishConfig": {
     "access": "public"
@@ -12,27 +12,26 @@
   ],
   "main": "index.js",
   "dependencies": {
-    "@appolo/http": "^7.0.0",
-    "@appolo/logger": "^7.0.1",
-    "appolo": "^7.0.2",
-    "appolo-rabbit": "^1.0.1",
-    "appolo-utils": "^0.0.53",
-    "bluebird": "^3.7.2",
-    "lodash": "^4.17.15"
+    "@appolo/http": "^8.0.0",
+    "@appolo/logger": "^8.0.4",
+    "@appolo/core": "^8.0.5",
+    "appolo-rabbit": "^8.0.0",
+    "@appolo/utils": "^8.0.5",
+    "lodash": "^4.17.20"
   },
   "devDependencies": {
-    "@types/bluebird": "^3.5.27",
-    "@types/chai": "^4.1.7",
-    "@types/lodash": "^4.14.134",
-    "@types/mocha": "^5.2.7",
-    "@types/node": "^12.0.8",
-    "@types/sinon": "^7.0.13",
-    "@types/sinon-chai": "^3.2.2",
+    "@types/bluebird": "^3.5.33",
+    "@types/chai": "^4.2.14",
+    "@types/lodash": "^4.14.165",
+    "@types/mocha": "^8.2.0",
+    "@types/node": "^14.14.11",
+    "@types/sinon": "^9.0.9",
+    "@types/sinon-chai": "^3.2.5",
     "chai": "^4.2.0",
-    "mocha": "^6.1.4",
-    "sinon": "^7.3.2",
-    "sinon-chai": "^3.3.0",
-    "typescript": "^3.9.3"
+    "mocha": "^8.2.1",
+    "sinon": "^9.2.1",
+    "sinon-chai": "^3.5.0",
+    "typescript": "^4.1.2"
   },
   "repository": {
     "type": "git",

@@ -1,4 +1,4 @@
-import {define, Define, IApp, initMethod, inject, singleton, Util,lazy} from 'appolo'
+import {define, singleton} from '@appolo/inject'
 import { HandlerSymbol} from "../common/decorators";
 import * as _ from "lodash";
 import {BaseHandlersManager} from "./baseHandlersManager";

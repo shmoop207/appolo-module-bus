@@ -2,14 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.request = exports.publisher = exports.reply = exports.handler = exports.ReplySymbol = exports.RequestSymbol = exports.PublisherSymbol = exports.HandlerSymbol = void 0;
 require("reflect-metadata");
-const appolo_1 = require("appolo");
+const utils_1 = require("@appolo/utils");
 exports.HandlerSymbol = "__HandlerSymbol__";
 exports.PublisherSymbol = "__PublisherSymbol__";
 exports.RequestSymbol = "__RequestSymbol__";
 exports.ReplySymbol = "__ReplySymbol__";
 function defineHandler(eventName, options, symbol) {
     return function (target, propertyKey, descriptor) {
-        let data = appolo_1.Util.getReflectData(symbol, target.constructor, {});
+        let data = utils_1.Reflector.getFnMetadata(symbol, target.constructor, {});
         if (!data[propertyKey]) {
             data[propertyKey] = {
                 events: [],
@@ -22,7 +22,7 @@ function defineHandler(eventName, options, symbol) {
 }
 function definePublisher(eventName, symbol, options) {
     return function (target, propertyKey, descriptor) {
-        let data = appolo_1.Util.getReflectData(symbol, target.constructor, {});
+        let data = utils_1.Reflector.getFnMetadata(symbol, target.constructor, {});
         if (!data[propertyKey]) {
             data[propertyKey] = {
                 eventName,

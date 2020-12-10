@@ -1,4 +1,4 @@
-import {define, inject, Injector, singleton} from "appolo/index";
+import {define, inject, Injector, singleton} from "@appolo/inject";
 import {IHandler} from "../common/interfaces";
 import {HandlersManager} from "../handlers/handlersManager";
 import {RepliesManager} from "../handlers/repliesManager";

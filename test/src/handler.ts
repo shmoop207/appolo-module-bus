@@ -1,4 +1,4 @@
-import {define, singleton,alias} from 'appolo'
+import {define, singleton,alias} from '@appolo/inject'
 import {handler, IMessage,reply} from "../../index";
 
 @define()

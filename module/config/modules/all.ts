@@ -1,4 +1,4 @@
-import {App} from 'appolo';
+import {App} from '@appolo/core';
 
 import {LoggerModule} from '@appolo/logger';
 import {HttpModule} from '@appolo/http';
@@ -7,9 +7,9 @@ import {HttpModule} from '@appolo/http';
 export = async function (app: App) {
 
     if(!app.injector.hasDefinition("logger")){
-        await app.module(LoggerModule)
+        await app.module.load(LoggerModule)
     }
 
-    await app.module(HttpModule)
+    await app.module.use(HttpModule)
 
 }
