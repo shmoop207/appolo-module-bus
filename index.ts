@@ -10,6 +10,7 @@ export {BusProvider} from "./module/src/bus/busProvider"
 export {Publisher} from "./module/src/bus/publisher"
 export {reply, request, publisher, handler} from "./module/src/common/decorators"
 export {BusModule} from "./module/busModule"
+export {IHandlerMetadataOptions,IPublishProviderOptions} from "./module/src/common/interfaces"
 
 export {IPublishOptions, IRequestOptions, IMessage, Message, IQueueOptions}
 
