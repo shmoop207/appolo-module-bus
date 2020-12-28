@@ -1,6 +1,6 @@
 "use strict";
 import {define, inject, singleton} from '@appolo/inject'
-import {App} from '@appolo/core'
+import {App} from '@appolo/engine'
 import {IOptions} from "../common/IOptions";
 import {ILogger} from '@appolo/logger';
 import {HttpService} from '@appolo/http';

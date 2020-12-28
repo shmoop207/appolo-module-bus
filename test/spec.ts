@@ -1,4 +1,4 @@
-import {createApp, App} from '@appolo/core'
+import {createApp, App} from '@appolo/engine'
 import {BusModule, BusProvider} from "../index";
 import {MessagePublisher} from "./src/publisher";
 import {MessageHandler} from "./src/handler";
@@ -18,7 +18,7 @@ describe("bus module Spec", function () {
     let app: App;
 
     beforeEach(async () => {
-        app = createApp({root: __dirname, environment: "testing", port: 8181});
+        app = createApp({root: __dirname, environment: "testing"});
 
         await app.module.use(BusModule.for({
             queue: "bus-test",

@@ -1,4 +1,4 @@
-import {App} from '@appolo/core';
+import {App} from '@appolo/engine';
 
 import {LoggerModule} from '@appolo/logger';
 import {HttpModule} from '@appolo/http';

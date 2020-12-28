@@ -1,6 +1,6 @@
 {
   "name": "@appolo/bus",
-  "version": "8.0.1",
+  "version": "8.0.2",
   "description": "appolo bus module",
   "publishConfig": {
     "access": "public"
@@ -12,9 +12,9 @@
   ],
   "main": "index.js",
   "dependencies": {
-    "@appolo/http": "^8.0.0",
-    "@appolo/logger": "^8.0.4",
-    "@appolo/core": "^8.0.5",
+    "@appolo/http": "^8.0.1",
+    "@appolo/logger": "^8.0.5",
+    "@appolo/engine": "^8.0.19",
     "appolo-rabbit": "^8.0.0",
     "@appolo/utils": "^8.0.5",
     "lodash": "^4.17.20"

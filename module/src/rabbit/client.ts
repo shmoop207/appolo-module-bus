@@ -1,5 +1,5 @@
 import {define, factory, IFactory, inject, singleton} from '@appolo/inject'
-import {IEnv} from '@appolo/core'
+import {IEnv} from '@appolo/engine'
 import {IOptions} from "../common/IOptions";
 import {ILogger} from '@appolo/logger';
 import {TopologyManager} from "../topology/topologyManager";

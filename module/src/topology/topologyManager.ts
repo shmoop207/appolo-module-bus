@@ -1,5 +1,5 @@
 import {define, inject, singleton, Util, Define} from "@appolo/inject";
-import {IEnv,App} from "@appolo/core";
+import {IEnv,App} from "@appolo/engine";
 import {IOptions} from "../common/IOptions";
 import * as _ from "lodash";
 import {HandlersManager} from "../handlers/handlersManager";
