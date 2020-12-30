@@ -56,6 +56,9 @@ describe("bus module Spec", function () {
 
         let publisher = app.injector.get<MessagePublisher>(MessagePublisher);
         let handler = app.injector.get<MessageHandler>(MessageHandler);
+        let busProvider = app.injector.get<BusProvider>(BusProvider);
+
+      // await busProvider.addHandlerClass(MessageHandler)
 
         let spy = sinon.spy(handler, "handle");
 

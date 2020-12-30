@@ -122,6 +122,19 @@ let BusProvider = class BusProvider {
             throw e;
         }
     }
+    async addHandlerClass(fn) {
+        let result = this.topologyManager.addMessageHandler(fn);
+        await utils_1.Promises.map(result, item => this.bindToQueue(Object.assign(Object.assign({}, item.options), { type: item.eventName })));
+    }
+    async addReplyClass(fn) {
+        let result = this.topologyManager.addReplyMessageHandler(fn);
+        await utils_1.Promises.map(result, item => this.bindToQueue(Object.assign(Object.assign({}, item.options), { type: item.eventName })));
+    }
+    bindToQueue(options) {
+        return this.client.bind({
+            exchange: options.exchange, queue: options.queue, keys: [options.routingKey || options.type]
+        });
+    }
 };
 tslib_1.__decorate([
     inject_1.inject()

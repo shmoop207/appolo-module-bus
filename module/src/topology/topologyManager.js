@@ -7,6 +7,7 @@ const _ = require("lodash");
 const url = require("url");
 const defaults_1 = require("../common/defaults");
 const decorators_1 = require("../common/decorators");
+const utils_1 = require("@appolo/utils");
 let TopologyManager = class TopologyManager {
     appendEnv(name) {
         return name ? (this.moduleOptions.addEnvToNames ? (`${name}-${this.envName}`) : name) : "";
@@ -112,25 +113,40 @@ let TopologyManager = class TopologyManager {
         });
         return bindings;
     }
+    addMessageHandler(fn) {
+        let metaData = utils_1.Reflector.getFnOwnMetadata(decorators_1.HandlerSymbol, fn), define = this.app.discovery.getClassDefinition(fn);
+        return this.addHandler(fn, define, metaData, this.handlersManager, this.getDefaultQueueName());
+    }
+    addReplyMessageHandler(fn) {
+        let metaData = utils_1.Reflector.getFnOwnMetadata(decorators_1.ReplySymbol, fn), define = this.app.discovery.getClassDefinition(fn);
+        return this.addHandler(fn, define, metaData, this.repliesManager, this.getDefaultRequestQueueName());
+    }
     _createHandlers(symbol, manager, defaultQueue) {
         let exported = this.app.tree.parent.discovery.findAllReflectData(symbol);
-        _.forEach(exported, (item) => this._createHandler(item.fn, item.define, item.metaData, manager, defaultQueue));
+        _.forEach(exported, (item) => this.addHandler(item.fn, item.define, item.metaData, manager, defaultQueue));
     }
-    _createHandler(fn, define, metaData, manager, defaultQueue) {
+    addHandler(fn, define, metaData, manager, defaultQueue) {
+        let output = [];
         _.forEach(metaData, handler => {
             _.forEach(handler.events, item => {
-                let options = item.options || {};
-                let queue = this.appendEnv(options.queue) || defaultQueue, exchange = this.appendEnv(options.exchange) || this.getDefaultExchangeName(), routingKey = options.routingKey || item.eventName;
-                if (!queue) {
-                    throw new Error(`no queue defined for ${item.eventName}`);
-                }
-                if (!exchange) {
-                    throw new Error(`no exchange defined for ${item.eventName}`);
-                }
-                options = Object.assign({}, item.options, { queue, exchange, routingKey });
-                manager.register(item.eventName, options, define, handler.propertyKey);
+                let dto = this._addHandler(item.eventName, item.options, defaultQueue, manager, define, handler.propertyKey);
+                output.push(dto);
             });
         });
+        return output;
+    }
+    _addHandler(eventName, options, defaultQueue, manager, define, propertyKey) {
+        options = options || {};
+        let queue = this.appendEnv(options.queue) || defaultQueue, exchange = this.appendEnv(options.exchange) || this.getDefaultExchangeName(), routingKey = options.routingKey || eventName;
+        if (!queue) {
+            throw new Error(`no queue defined for ${eventName}`);
+        }
+        if (!exchange) {
+            throw new Error(`no exchange defined for ${eventName}`);
+        }
+        options = Object.assign({}, options, { queue, exchange, routingKey });
+        manager.register(eventName, options, define, propertyKey);
+        return { eventName, options: options, define, propertyKey };
     }
 };
 tslib_1.__decorate([

@@ -37,7 +37,7 @@ export class BusProvider {
         await this.messageManager.initialize();
         this._inInitialized = true;
 
-        this.app.event.beforeReset.once( () => this.close())
+        this.app.event.beforeReset.once(() => this.close())
 
         process.on('exit', () => this.close());
 
@@ -195,5 +195,24 @@ export class BusProvider {
         }
 
 
+    }
+
+    public async addHandlerClass(fn: Function) {
+
+        let result = this.topologyManager.addMessageHandler(fn);
+
+        await Promises.map(result, item => this.bindToQueue({...item.options, type: item.eventName}))
+    }
+
+    public async addReplyClass(fn: Function) {
+        let result = this.topologyManager.addReplyMessageHandler(fn);
+
+        await Promises.map(result, item => this.bindToQueue({...item.options, type: item.eventName}))
+    }
+
+    public bindToQueue(options: { queue: string, exchange: string, routingKey?: string, type: string }) {
+        return this.client.bind({
+            exchange: options.exchange, queue: options.queue, keys: [options.routingKey || options.type]
+        })
     }
 }

@@ -1,5 +1,5 @@
 import {define, inject, singleton, Util, Define} from "@appolo/inject";
-import {IEnv,App} from "@appolo/engine";
+import {IEnv, App} from "@appolo/engine";
 import {IOptions} from "../common/IOptions";
 import * as _ from "lodash";
 import {HandlersManager} from "../handlers/handlersManager";
@@ -13,9 +13,10 @@ import {
     IQueueOptions, IBindingOptions
 } from "appolo-rabbit";
 import {ExchangeDefaults, QueueDefaults, ReplyQueueDefaults, RequestQueueDefaults} from "../common/defaults";
-import {IHandlerMetadata, IHandlerProperties} from "../common/interfaces";
+import {IHandlerMetadata, IHandlerMetadataOptions, IHandlerProperties} from "../common/interfaces";
 import {BaseHandlersManager} from "../handlers/baseHandlersManager";
 import {HandlerSymbol, ReplySymbol, RequestSymbol} from "../common/decorators";
+import {Reflector} from "@appolo/utils";
 
 @define()
 @singleton()
@@ -182,40 +183,71 @@ export class TopologyManager {
         return bindings;
     }
 
-    private _createHandlers(symbol: string, manager: BaseHandlersManager, defaultQueue: string) {
+    public addMessageHandler(fn: Function) {
 
-        let exported =  this.app.tree.parent.discovery.findAllReflectData<IHandlerMetadata>(symbol);
+        let metaData = Reflector.getFnOwnMetadata<IHandlerMetadata>(HandlerSymbol, fn),
+            define = this.app.discovery.getClassDefinition(fn);
 
-        _.forEach(exported, (item) => this._createHandler(item.fn, item.define, item.metaData, manager, defaultQueue))
+        return this.addHandler(fn, define, metaData, this.handlersManager, this.getDefaultQueueName())
     }
 
-    private _createHandler(fn: Function, define: Define, metaData: IHandlerMetadata, manager: BaseHandlersManager, defaultQueue: string) {
 
+    public addReplyMessageHandler(fn: Function) {
+
+        let metaData = Reflector.getFnOwnMetadata<IHandlerMetadata>(ReplySymbol, fn),
+            define = this.app.discovery.getClassDefinition(fn);
+
+        return this.addHandler(fn, define, metaData, this.repliesManager, this.getDefaultRequestQueueName())
+
+    }
+
+    private _createHandlers(symbol: string, manager: BaseHandlersManager, defaultQueue: string) {
+
+        let exported = this.app.tree.parent.discovery.findAllReflectData<IHandlerMetadata>(symbol);
+
+        _.forEach(exported, (item) => this.addHandler(item.fn, item.define, item.metaData, manager, defaultQueue))
+    }
+
+    public addHandler(fn: Function, define: Define, metaData: IHandlerMetadata, manager: BaseHandlersManager, defaultQueue: string): { eventName: string, options: Required<IHandlerMetadataOptions>, define: Define, propertyKey: string }[] {
+
+        let output = []
 
         _.forEach(metaData, handler => {
 
             _.forEach(handler.events, item => {
 
-                let options = item.options || {};
+                let dto = this._addHandler(item.eventName, item.options, defaultQueue, manager, define, handler.propertyKey)
 
-                let queue = this.appendEnv(options.queue) || defaultQueue,
-                    exchange = this.appendEnv(options.exchange) || this.getDefaultExchangeName(),
-                    routingKey = options.routingKey || item.eventName;
-
-                if(!queue){
-                    throw new Error(`no queue defined for ${item.eventName}`)
-                }
-
-                if(!exchange){
-                    throw new Error(`no exchange defined for ${item.eventName}`)
-                }
-
-
-                options = Object.assign({}, item.options, {queue, exchange, routingKey});
-
-                manager.register(item.eventName, options, define, handler.propertyKey)
+                output.push(dto);
             })
         });
+
+        return output;
+    }
+
+    private _addHandler(eventName: string, options: IHandlerMetadataOptions, defaultQueue: string, manager: BaseHandlersManager, define: Define, propertyKey: string): { eventName: string, options: Required<IHandlerMetadataOptions>, define: Define, propertyKey: string } {
+
+        options = options || {};
+
+        let queue = this.appendEnv(options.queue) || defaultQueue,
+            exchange = this.appendEnv(options.exchange) || this.getDefaultExchangeName(),
+            routingKey = options.routingKey || eventName;
+
+        if (!queue) {
+            throw new Error(`no queue defined for ${eventName}`)
+        }
+
+        if (!exchange) {
+            throw new Error(`no exchange defined for ${eventName}`)
+        }
+
+
+        options = Object.assign({}, options, {queue, exchange, routingKey});
+
+        manager.register(eventName, options, define, propertyKey);
+
+        return {eventName, options: options as Required<IHandlerMetadataOptions>, define, propertyKey}
+
     }
 
 
