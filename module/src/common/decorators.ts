@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import {Reflector} from '@appolo/utils';
 import {IHandlerMetadata, IHandlerMetadataOptions, IPublisherMetadata, IPublisherMetaOptions} from "./interfaces";
+import {IApp} from "@appolo/engine/index";
 
 export const HandlerSymbol = "__HandlerSymbol__";
 export const PublisherSymbol = "__PublisherSymbol__";
@@ -8,7 +9,7 @@ export const RequestSymbol = "__RequestSymbol__";
 export const ReplySymbol = "__ReplySymbol__";
 
 
-function defineHandler(eventName: string, options: IHandlerMetadataOptions, symbol: string) {
+function defineHandler(eventName: string|((app: IApp) => string), options: IHandlerMetadataOptions, symbol: string) {
     return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
 
         let data = Reflector.getFnMetadata<IHandlerMetadata>(symbol, target.constructor, {});
@@ -43,11 +44,11 @@ function definePublisher(eventName, symbol: string, options?: IPublisherMetaOpti
     }
 }
 
-export function handler(eventName: string, options?: IHandlerMetadataOptions) {
+export function handler(eventName: string|((app: IApp) => string), options?: IHandlerMetadataOptions) {
     return defineHandler(eventName, options, HandlerSymbol)
 }
 
-export function reply(eventName: string, options?: IHandlerMetadataOptions) {
+export function reply(eventName: string|((app: IApp) => string), options?: IHandlerMetadataOptions) {
     return defineHandler(eventName, options, ReplySymbol)
 }
 

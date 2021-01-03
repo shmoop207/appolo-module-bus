@@ -145,6 +145,9 @@ let TopologyManager = class TopologyManager {
             throw new Error(`no exchange defined for ${eventName}`);
         }
         options = Object.assign({}, options, { queue, exchange, routingKey });
+        if (typeof eventName == "function") {
+            eventName = eventName(this.app);
+        }
         manager.register(eventName, options, define, propertyKey);
         return { eventName, options: options, define, propertyKey };
     }

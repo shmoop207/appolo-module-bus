@@ -1,4 +1,5 @@
 import {Define} from "@appolo/inject";
+import {IApp} from "@appolo/engine";
 import {RequestError} from "./requestError";
 
 // export interface IClient {
@@ -31,7 +32,7 @@ export interface IHandlerProperties {
 
 export interface IHandlerMetadata {
     [index: string]: {
-        events: { eventName: string, options: IHandlerMetadataOptions }[]
+        events: { eventName: string | ((app: IApp) => string), options: IHandlerMetadataOptions }[]
         propertyKey: string,
         descriptor: PropertyDescriptor
     }

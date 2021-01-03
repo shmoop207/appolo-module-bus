@@ -1,5 +1,5 @@
 import {define, inject, singleton, Util, Define} from "@appolo/inject";
-import {IEnv, App} from "@appolo/engine";
+import {IEnv, App, IApp} from "@appolo/engine";
 import {IOptions} from "../common/IOptions";
 import * as _ from "lodash";
 import {HandlersManager} from "../handlers/handlersManager";
@@ -225,7 +225,7 @@ export class TopologyManager {
         return output;
     }
 
-    private _addHandler(eventName: string, options: IHandlerMetadataOptions, defaultQueue: string, manager: BaseHandlersManager, define: Define, propertyKey: string): { eventName: string, options: Required<IHandlerMetadataOptions>, define: Define, propertyKey: string } {
+    private _addHandler(eventName: string | ((app: IApp) => string), options: IHandlerMetadataOptions, defaultQueue: string, manager: BaseHandlersManager, define: Define, propertyKey: string): { eventName: string, options: Required<IHandlerMetadataOptions>, define: Define, propertyKey: string } {
 
         options = options || {};
 
@@ -243,6 +243,10 @@ export class TopologyManager {
 
 
         options = Object.assign({}, options, {queue, exchange, routingKey});
+
+        if (typeof eventName == "function") {
+            eventName = eventName(this.app);
+        }
 
         manager.register(eventName, options, define, propertyKey);
 
