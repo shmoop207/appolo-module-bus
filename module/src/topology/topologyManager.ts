@@ -245,7 +245,7 @@ export class TopologyManager {
         options = Object.assign({}, options, {queue, exchange, routingKey});
 
         if (typeof eventName == "function") {
-            eventName = eventName(this.app);
+            eventName = eventName(define.definition.injector ? define.definition.injector.get("app") : this.app);
         }
 
         manager.register(eventName, options, define, propertyKey);
