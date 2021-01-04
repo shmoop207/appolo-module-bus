@@ -229,6 +229,10 @@ export class TopologyManager {
 
         options = options || {};
 
+        if (typeof eventName == "function") {
+            eventName = eventName(define.definition.injector ? define.definition.injector.get("app") : this.app);
+        }
+
         let queue = this.appendEnv(options.queue) || defaultQueue,
             exchange = this.appendEnv(options.exchange) || this.getDefaultExchangeName(),
             routingKey = options.routingKey || eventName;
@@ -244,9 +248,7 @@ export class TopologyManager {
 
         options = Object.assign({}, options, {queue, exchange, routingKey});
 
-        if (typeof eventName == "function") {
-            eventName = eventName(define.definition.injector ? define.definition.injector.get("app") : this.app);
-        }
+
 
         manager.register(eventName, options, define, propertyKey);
 

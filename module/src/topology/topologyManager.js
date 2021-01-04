@@ -137,6 +137,9 @@ let TopologyManager = class TopologyManager {
     }
     _addHandler(eventName, options, defaultQueue, manager, define, propertyKey) {
         options = options || {};
+        if (typeof eventName == "function") {
+            eventName = eventName(define.definition.injector ? define.definition.injector.get("app") : this.app);
+        }
         let queue = this.appendEnv(options.queue) || defaultQueue, exchange = this.appendEnv(options.exchange) || this.getDefaultExchangeName(), routingKey = options.routingKey || eventName;
         if (!queue) {
             throw new Error(`no queue defined for ${eventName}`);
@@ -145,9 +148,6 @@ let TopologyManager = class TopologyManager {
             throw new Error(`no exchange defined for ${eventName}`);
         }
         options = Object.assign({}, options, { queue, exchange, routingKey });
-        if (typeof eventName == "function") {
-            eventName = eventName(define.definition.injector ? define.definition.injector.get("app") : this.app);
-        }
         manager.register(eventName, options, define, propertyKey);
         return { eventName, options: options, define, propertyKey };
     }

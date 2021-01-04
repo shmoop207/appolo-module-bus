@@ -10,6 +10,9 @@ let MessageHandler = class MessageHandler {
     replay(mes) {
         return { result: mes.body.test + "working" };
     }
+    replay2(mes) {
+        return { result: mes.body.test + "working" };
+    }
 };
 tslib_1.__decorate([
     index_1.handler("Module.Test")
@@ -17,6 +20,9 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     index_1.reply("Request.Module.Test")
 ], MessageHandler.prototype, "replay", null);
+tslib_1.__decorate([
+    index_1.reply(() => "Request.Module.Test2")
+], MessageHandler.prototype, "replay2", null);
 MessageHandler = tslib_1.__decorate([
     inject_1.define(),
     inject_1.singleton()

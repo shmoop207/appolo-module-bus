@@ -14,4 +14,9 @@ export class MessageHandler  {
     replay(mes:IMessage<any>){
         return {result:mes.body.test +"working"}
     }
+
+    @reply(()=>"Request.Module.Test2")
+    replay2(mes:IMessage<any>){
+        return {result:mes.body.test +"working"}
+    }
 }
