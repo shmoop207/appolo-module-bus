@@ -79,7 +79,8 @@ export class MessageManager {
     private async _callHandler(msg: Message<any>, handler: IHandler) {
 
         try {
-            let instance = this.injector.parent.get(handler.define.definition.id);
+
+            let instance = this._getHandlerInjector(handler).get(handler.define.definition.id);
 
             await instance[handler.propertyKey](msg);
             if (!msg.isAcked) {
@@ -97,10 +98,20 @@ export class MessageManager {
         }
     }
 
+    private _getHandlerInjector(handler: IHandler): Injector {
+        let def = handler.define.definition,
+            injector = def.injector && def.injector.hasDefinition(def.id)
+                ? def.injector
+                : this.injector.parent;
+
+        return injector;
+    }
+
     private async _callReply(msg: Message<any>, handler: IHandler) {
 
         try {
-            let instance = this.injector.parent.get(handler.define.definition.id);
+
+            let instance = this._getHandlerInjector(handler).get(handler.define.definition.id);
 
             let data = await instance[handler.propertyKey](msg);
 

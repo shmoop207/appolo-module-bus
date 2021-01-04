@@ -42,7 +42,7 @@ let MessageManager = class MessageManager {
     }
     async _callHandler(msg, handler) {
         try {
-            let instance = this.injector.parent.get(handler.define.definition.id);
+            let instance = this._getHandlerInjector(handler).get(handler.define.definition.id);
             await instance[handler.propertyKey](msg);
             if (!msg.isAcked) {
                 msg.ack();
@@ -55,9 +55,15 @@ let MessageManager = class MessageManager {
             }
         }
     }
+    _getHandlerInjector(handler) {
+        let def = handler.define.definition, injector = def.injector && def.injector.hasDefinition(def.id)
+            ? def.injector
+            : this.injector.parent;
+        return injector;
+    }
     async _callReply(msg, handler) {
         try {
-            let instance = this.injector.parent.get(handler.define.definition.id);
+            let instance = this._getHandlerInjector(handler).get(handler.define.definition.id);
             let data = await instance[handler.propertyKey](msg);
             if (!msg.isAcked) {
                 msg.replyResolve(data);
