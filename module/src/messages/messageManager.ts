@@ -23,6 +23,7 @@ export class MessageManager {
 
     private _handler: Handler;
     private _handlerRequest: Handler;
+    private _initialized = false;
 
     public async initialize() {
 
@@ -51,6 +52,8 @@ export class MessageManager {
         if (replyHandlers.length) {
             this.logger.info(`bus reply subscription ${replyHandlers.map((item) => item.eventName).join(",")}`);
         }
+
+        this._initialized = true;
 
     }
 
@@ -129,10 +132,12 @@ export class MessageManager {
 
     public async clean() {
 
-        await this.client.unSubscribe();
+        if (this._initialized) {
+            await this.client.unSubscribe();
 
-        this._handler.remove();
-        this._handlerRequest.remove();
+            this._handler.remove();
+            this._handlerRequest.remove();
+        }
 
         this.repliesManager.clean();
         this.handlersManager.clean();

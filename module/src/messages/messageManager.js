@@ -5,6 +5,9 @@ const tslib_1 = require("tslib");
 const inject_1 = require("@appolo/inject");
 const _ = require("lodash");
 let MessageManager = class MessageManager {
+    constructor() {
+        this._initialized = false;
+    }
     async initialize() {
         this._handler = this.client.handle({
             type: "#",
@@ -25,6 +28,7 @@ let MessageManager = class MessageManager {
         if (replyHandlers.length) {
             this.logger.info(`bus reply subscription ${replyHandlers.map((item) => item.eventName).join(",")}`);
         }
+        this._initialized = true;
     }
     async _handleRequestMessage(msg) {
         let replies = this.repliesManager.getHandlers(msg.type, msg.queue, msg.fields.exchange, msg.fields.routingKey);
@@ -76,9 +80,11 @@ let MessageManager = class MessageManager {
         }
     }
     async clean() {
-        await this.client.unSubscribe();
-        this._handler.remove();
-        this._handlerRequest.remove();
+        if (this._initialized) {
+            await this.client.unSubscribe();
+            this._handler.remove();
+            this._handlerRequest.remove();
+        }
         this.repliesManager.clean();
         this.handlersManager.clean();
         this._handler = null;
