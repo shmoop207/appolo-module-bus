@@ -1,7 +1,6 @@
 import {define, inject, singleton, Util, Define} from "@appolo/inject";
 import {IEnv, App, IApp} from "@appolo/engine";
 import {IOptions} from "../common/IOptions";
-import * as _ from "lodash";
 import {HandlersManager} from "../handlers/handlersManager";
 import {RepliesManager} from "../handlers/repliesManager";
 import url = require("url");
@@ -16,7 +15,7 @@ import {ExchangeDefaults, QueueDefaults, ReplyQueueDefaults, RequestQueueDefault
 import {IHandlerMetadata, IHandlerMetadataOptions, IHandlerProperties} from "../common/interfaces";
 import {BaseHandlersManager} from "../handlers/baseHandlersManager";
 import {HandlerSymbol, ReplySymbol, RequestSymbol} from "../common/decorators";
-import {Reflector} from "@appolo/utils";
+import {Reflector, Strings} from "@appolo/utils";
 
 @define()
 @singleton()
@@ -89,10 +88,10 @@ export class TopologyManager {
         let queues = this.moduleOptions.queues || [];
 
         if (this.moduleOptions.queue) {
-            queues.unshift(_.isString(this.moduleOptions.queue) ? {name: this.moduleOptions.queue} : this.moduleOptions.queue);
+            queues.unshift(Strings.isString(this.moduleOptions.queue) ? {name: this.moduleOptions.queue} : this.moduleOptions.queue);
         }
 
-        queues = _.map(queues, queue => Object.assign({}, QueueDefaults, queue, {name: this.appendEnv(queue.name)}));
+        queues = queues.map(queue => Object.assign({}, QueueDefaults, queue, {name: this.appendEnv(queue.name)}));
 
         return queues;
 
@@ -102,10 +101,10 @@ export class TopologyManager {
         let requestQueues = this.moduleOptions.requestQueues || [];
 
         if (this.moduleOptions.requestQueue) {
-            requestQueues.unshift(_.isString(this.moduleOptions.requestQueue) ? {name: this.moduleOptions.requestQueue} : this.moduleOptions.requestQueue);
+            requestQueues.unshift(Strings.isString(this.moduleOptions.requestQueue) ? {name: this.moduleOptions.requestQueue} : this.moduleOptions.requestQueue);
         }
 
-        requestQueues = _.map(requestQueues, queue => Object.assign({}, RequestQueueDefaults, queue, {name: this.appendEnv(queue.name)}));
+        requestQueues = requestQueues.map(queue => Object.assign({}, RequestQueueDefaults, queue, {name: this.appendEnv(queue.name)}));
 
         return requestQueues;
     }
@@ -115,7 +114,7 @@ export class TopologyManager {
         let replyQueue = null;
 
         if (this.moduleOptions.replyQueue) {
-            replyQueue = _.isString(this.moduleOptions.replyQueue) ? {name: this.moduleOptions.replyQueue} : this.moduleOptions.replyQueue;
+            replyQueue = Strings.isString(this.moduleOptions.replyQueue) ? {name: this.moduleOptions.replyQueue} : this.moduleOptions.replyQueue;
 
             replyQueue = Object.assign({}, ReplyQueueDefaults, replyQueue, {name: this.appendEnv(replyQueue.name)})
         }
@@ -128,11 +127,11 @@ export class TopologyManager {
         let exchanges = this.moduleOptions.exchanges || [];
 
         if (this.moduleOptions.exchange) {
-            exchanges.unshift(_.isString(this.moduleOptions.exchange) ? {name: this.moduleOptions.exchange} : this.moduleOptions.exchange);
+            exchanges.unshift(Strings.isString(this.moduleOptions.exchange) ? {name: this.moduleOptions.exchange} : this.moduleOptions.exchange);
 
         }
 
-        exchanges = _.map(exchanges, exchange => Object.assign({}, ExchangeDefaults, exchange, {name: this.appendEnv(exchange.name)}));
+        exchanges = exchanges.map(exchange => Object.assign({}, ExchangeDefaults, exchange, {name: this.appendEnv(exchange.name)}));
 
         return exchanges;
     }
@@ -140,7 +139,7 @@ export class TopologyManager {
     private _createConnection(): IConnectionOptions {
         let connection: IConnectionOptions = this.moduleOptions.connection as IConnectionOptions;
 
-        if (_.isString(this.moduleOptions.connection)) {
+        if (Strings.isString(this.moduleOptions.connection)) {
             connection = {uri: this.moduleOptions.connection}
         }
 
@@ -172,7 +171,7 @@ export class TopologyManager {
 
         let handlers: IHandlerProperties[] = messageHandlers.concat(replyHandlers);
 
-        _.forEach(handlers, handler => {
+        handlers.forEach(handler => {
             bindings.push({
                 exchange: handler.exchange,
                 queue: handler.queue,
@@ -205,16 +204,17 @@ export class TopologyManager {
 
         let exported = this.app.tree.parent.discovery.findAllReflectData<IHandlerMetadata>(symbol);
 
-        _.forEach(exported, (item) => this.addHandler(item.fn, item.define, item.metaData, manager, defaultQueue))
+        exported.forEach((item) => this.addHandler(item.fn, item.define, item.metaData, manager, defaultQueue))
     }
 
     public addHandler(fn: Function, define: Define, metaData: IHandlerMetadata, manager: BaseHandlersManager, defaultQueue: string): { eventName: string, options: Required<IHandlerMetadataOptions>, define: Define, propertyKey: string }[] {
 
         let output = []
 
-        _.forEach(metaData, handler => {
+        Object.keys(metaData || {}).forEach(key => {
+            let handler = metaData[key];
 
-            _.forEach(handler.events, item => {
+            (handler.events || []).forEach(item => {
 
                 let dto = this._addHandler(item.eventName, item.options, defaultQueue, manager, define, handler.propertyKey)
 
@@ -247,7 +247,6 @@ export class TopologyManager {
 
 
         options = Object.assign({}, options, {queue, exchange, routingKey});
-
 
 
         manager.register(eventName, options, define, propertyKey);

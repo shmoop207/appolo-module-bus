@@ -4,7 +4,7 @@ import {HandlersManager} from "../handlers/handlersManager";
 import {RepliesManager} from "../handlers/repliesManager";
 import {TopologyManager} from "../topology/topologyManager";
 import {ILogger} from "@appolo/logger/index";
-import * as _ from "lodash";
+import {Promises} from "@appolo/utils";
 import {BusProvider} from "../bus/busProvider";
 import {RequestError} from "../common/requestError";
 import {Rabbit, Message, Handler} from "appolo-rabbit";
@@ -73,7 +73,7 @@ export class MessageManager {
         let handlers = this.handlersManager.getHandlers(msg.type, msg.queue, msg.fields.exchange, msg.fields.routingKey);
 
         if (handlers.length) {
-            await Promise.all(_.map(handlers, handler => this._callHandler(msg, handler)));
+            await Promises.map(handlers || [], handler => this._callHandler(msg, handler));
         }
 
         msg.ack();

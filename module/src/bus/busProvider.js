@@ -89,9 +89,9 @@ let BusProvider = class BusProvider {
             type: opts.type,
             body: opts.data,
             routingKey: opts.routingKey || opts.type,
-            headers: {
-                queue: queue
-            }
+            delay: opts.delay,
+            retry: opts.retry,
+            headers: Object.assign(Object.assign({}, opts.headers), { queue: queue })
         };
         if (opts.expire) {
             params.expiration = opts.expire;

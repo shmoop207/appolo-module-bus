@@ -1,4 +1,4 @@
-import {module, Module,IModuleParams} from '@appolo/engine';
+import {module, Module, IModuleParams} from '@appolo/engine';
 import {IOptions} from "./src/common/IOptions";
 
 import {BusProvider} from "./src/bus/busProvider";
@@ -7,15 +7,13 @@ import {IPublisherMetadata, PublisherMeta} from "./src/common/interfaces";
 import {PublisherSymbol, RequestSymbol} from "./src/common/decorators";
 import {ILogger} from '@appolo/logger';
 import {Reflector} from '@appolo/utils';
-import * as _ from 'lodash';
 
 @module()
 export class BusModule extends Module<IOptions> {
 
 
-
     public static for(options?: IOptions): IModuleParams {
-        return {type:BusModule,options};
+        return {type: BusModule, options};
     }
 
     public get defaults(): Partial<IOptions> {
@@ -31,19 +29,19 @@ export class BusModule extends Module<IOptions> {
         let publisherMeta = this.app.tree.parent.discovery.findAllReflectData<IPublisherMetadata>(PublisherSymbol);
         let requestMeta = this.app.tree.parent.discovery.findAllReflectData<IPublisherMetadata>(RequestSymbol);
 
-        _.forEach(publisherMeta, (item => this._createPublishers(item)));
-        _.forEach(requestMeta, (item => this._createRequests(item)));
+        (publisherMeta || []).forEach(item => this._createPublishers(item));
+        (requestMeta || []).forEach(item => this._createRequests(item));
 
     }
 
     private _createPublishers(item: { fn: Function, metaData: IPublisherMetadata }) {
 
-        _.forEach(item.metaData, publisher => this._createPublisher(item.fn, publisher));
+        Object.keys(item.metaData || {}).forEach(key => this._createPublisher(item.fn, item.metaData[key]));
     }
 
     private _createRequests(item: { fn: Function, metaData: IPublisherMetadata }) {
 
-        _.forEach(item.metaData, publisher => this._createRequest(item.fn, publisher));
+        Object.keys(item.metaData || {}).forEach(key => this._createRequest(item.fn, item.metaData[key]));
     }
 
     private async _createPublisher(fn: Function, item: PublisherMeta) {

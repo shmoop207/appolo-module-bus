@@ -7,7 +7,6 @@ const engine_1 = require("@appolo/engine");
 const busProvider_1 = require("./src/bus/busProvider");
 const defaults_1 = require("./src/common/defaults");
 const decorators_1 = require("./src/common/decorators");
-const _ = require("lodash");
 let BusModule = BusModule_1 = class BusModule extends engine_1.Module {
     static for(options) {
         return { type: BusModule_1, options };
@@ -21,14 +20,14 @@ let BusModule = BusModule_1 = class BusModule extends engine_1.Module {
     beforeModuleInitialize() {
         let publisherMeta = this.app.tree.parent.discovery.findAllReflectData(decorators_1.PublisherSymbol);
         let requestMeta = this.app.tree.parent.discovery.findAllReflectData(decorators_1.RequestSymbol);
-        _.forEach(publisherMeta, (item => this._createPublishers(item)));
-        _.forEach(requestMeta, (item => this._createRequests(item)));
+        (publisherMeta || []).forEach(item => this._createPublishers(item));
+        (requestMeta || []).forEach(item => this._createRequests(item));
     }
     _createPublishers(item) {
-        _.forEach(item.metaData, publisher => this._createPublisher(item.fn, publisher));
+        Object.keys(item.metaData || {}).forEach(key => this._createPublisher(item.fn, item.metaData[key]));
     }
     _createRequests(item) {
-        _.forEach(item.metaData, publisher => this._createRequest(item.fn, publisher));
+        Object.keys(item.metaData || {}).forEach(key => this._createRequest(item.fn, item.metaData[key]));
     }
     async _createPublisher(fn, item) {
         let old = fn.prototype[item.propertyKey];

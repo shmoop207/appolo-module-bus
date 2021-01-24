@@ -1,5 +1,6 @@
 import {Define} from "@appolo/inject";
 import {IApp} from "@appolo/engine";
+import {IRetry} from "appolo-rabbit";
 import {RequestError} from "./requestError";
 
 // export interface IClient {
@@ -70,4 +71,7 @@ export interface IPublishProviderOptions {
     expire?: number,
     queue?: string,
     exchange?: string
+    delay?: number
+    retry?: IRetry
+    headers?: { [index: string]: any }
 }

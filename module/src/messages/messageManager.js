@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessageManager = void 0;
 const tslib_1 = require("tslib");
 const inject_1 = require("@appolo/inject");
-const _ = require("lodash");
+const utils_1 = require("@appolo/utils");
 let MessageManager = class MessageManager {
     constructor() {
         this._initialized = false;
@@ -40,7 +40,7 @@ let MessageManager = class MessageManager {
     async _handleMessage(msg) {
         let handlers = this.handlersManager.getHandlers(msg.type, msg.queue, msg.fields.exchange, msg.fields.routingKey);
         if (handlers.length) {
-            await Promise.all(_.map(handlers, handler => this._callHandler(msg, handler)));
+            await utils_1.Promises.map(handlers || [], handler => this._callHandler(msg, handler));
         }
         msg.ack();
     }

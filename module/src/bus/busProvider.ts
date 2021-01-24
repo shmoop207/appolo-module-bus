@@ -146,7 +146,10 @@ export class BusProvider {
             type: opts.type,
             body: opts.data,
             routingKey: opts.routingKey || opts.type,
+            delay:opts.delay,
+            retry:opts.retry,
             headers: {
+                ...opts.headers,
                 queue: queue
             }
 
