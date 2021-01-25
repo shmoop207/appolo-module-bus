@@ -47,6 +47,9 @@ let MessageManager = class MessageManager {
     async _callHandler(msg, handler) {
         try {
             let instance = this._getHandlerInjector(handler).get(handler.define.definition.id);
+            if (handler.retry) {
+                msg.retry = handler.retry;
+            }
             await instance[handler.propertyKey](msg);
             if (!msg.isAcked) {
                 msg.ack();

@@ -28,13 +28,14 @@ export abstract class BaseHandlersManager {
                 eventName,
                 exchange: options.exchange,
                 queue: options.queue,
-                routingKey: options.routingKey
+                routingKey: options.routingKey,
             });
         }
 
         this._handlers.get(key).handlers.push({
             define,
             propertyKey: propertyKey,
+            retry: options.retry
         });
     }
 

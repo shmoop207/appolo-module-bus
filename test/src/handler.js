@@ -15,7 +15,7 @@ let MessageHandler = class MessageHandler {
     }
 };
 tslib_1.__decorate([
-    index_1.handler("Module.Test")
+    index_1.handler("Module.Test", { retry: { retires: 1 } })
 ], MessageHandler.prototype, "handle", null);
 tslib_1.__decorate([
     index_1.reply("Request.Module.Test")

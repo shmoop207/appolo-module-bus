@@ -19,6 +19,7 @@ import {RequestError} from "./requestError";
 
 export interface IHandler {
     define: Define,
+    retry: IRetry,
     propertyKey: string,
 }
 
@@ -27,6 +28,7 @@ export interface IHandlerProperties {
     exchange: string,
     eventName: string,
     routingKey: string
+
     handlers: IHandler[]
 }
 
@@ -43,6 +45,7 @@ export interface IHandlerMetadataOptions {
     queue?: string,
     exchange?: string
     routingKey?: string
+    retry?: IRetry
 }
 
 export interface IPublisherMetadata {
