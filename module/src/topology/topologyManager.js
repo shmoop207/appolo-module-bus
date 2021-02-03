@@ -107,9 +107,10 @@ let TopologyManager = class TopologyManager {
             bindings.push({
                 exchange: handler.exchange,
                 queue: handler.queue,
-                keys: [handler.eventName]
+                keys: [handler.routingKey || handler.eventName]
             });
         });
+        bindings = utils_1.Arrays.uniqBy(bindings, handler => handler.exchange + handler.queue + handler.keys.join());
         return bindings;
     }
     addMessageHandler(fn) {

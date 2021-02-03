@@ -15,7 +15,7 @@ import {ExchangeDefaults, QueueDefaults, ReplyQueueDefaults, RequestQueueDefault
 import {IHandlerMetadata, IHandlerMetadataOptions, IHandlerProperties} from "../common/interfaces";
 import {BaseHandlersManager} from "../handlers/baseHandlersManager";
 import {HandlerSymbol, ReplySymbol, RequestSymbol} from "../common/decorators";
-import {Reflector, Strings} from "@appolo/utils";
+import {Reflector, Strings, Arrays} from "@appolo/utils";
 
 @define()
 @singleton()
@@ -175,9 +175,11 @@ export class TopologyManager {
             bindings.push({
                 exchange: handler.exchange,
                 queue: handler.queue,
-                keys: [handler.eventName]
+                keys: [handler.routingKey || handler.eventName]
             })
         });
+
+        bindings = Arrays.uniqBy(bindings, handler => handler.exchange + handler.queue + handler.keys.join());
 
         return bindings;
     }
