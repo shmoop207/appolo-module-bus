@@ -96,7 +96,7 @@ export class MessageManager {
 
         } catch (e) {
 
-            this.logger.error(`failed to handle message ${msg.type}`, {err: e, msg: msg});
+            this.logger.error(`failed to handle message ${msg.type}`, {err: e, msg: msg.body});
 
             if (!msg.isAcked) {
                 msg.nack();
