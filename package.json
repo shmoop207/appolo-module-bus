@@ -14,7 +14,7 @@
   "dependencies": {
     "@appolo/http": "^8.0.1",
     "@appolo/logger": "^8.0.5",
-    "@appolo/engine": "^8.0.19",
+    "@appolo/engine": "^8.0.23",
     "appolo-rabbit": "^8.0.3",
     "@appolo/utils": "^8.0.5"
   },
