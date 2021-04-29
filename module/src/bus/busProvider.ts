@@ -101,7 +101,7 @@ export class BusProvider {
         return this.client.publish(exchange, params);
     }
 
-    public async request<T>(routingKey: string | Object, type?: string, data?: any, expire?: number): Promise<T>
+    public async request<T>(routingKey: string | IPublishProviderOptions, type?: string, data?: any, expire?: number): Promise<T>
     public async request<T>(opts: IPublishProviderOptions): Promise<T> {
 
         if (arguments.length > 1) {
