@@ -43,6 +43,7 @@ describe("bus module Spec", function () {
     it("should request reply", async () => {
 
 
+
         let publisher = app.injector.get<MessagePublisher>(MessagePublisher);
 
         let data = await publisher.requestMethod("aa");

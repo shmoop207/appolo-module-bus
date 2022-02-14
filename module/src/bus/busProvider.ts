@@ -4,12 +4,13 @@ import {App} from '@appolo/engine'
 import {IOptions} from "../common/IOptions";
 import {ILogger} from '@appolo/logger';
 import {HttpService} from '@appolo/http';
-import {Rabbit, IPublishOptions, IRequestOptions} from "appolo-rabbit";
+import {Rabbit, IPublishOptions, IRequestOptions, IConnectionOptions} from "appolo-rabbit";
 import {TopologyManager} from "../topology/topologyManager";
 import {MessageManager} from "../messages/messageManager";
 import {PassThrough} from "stream";
 import {Promises} from "@appolo/utils";
 import {IPublishProviderOptions} from "../common/interfaces";
+import url = require("url");
 
 @define()
 @singleton()
@@ -146,8 +147,8 @@ export class BusProvider {
             type: opts.type,
             body: opts.data,
             routingKey: opts.routingKey || opts.type,
-            delay:opts.delay,
-            retry:opts.retry,
+            delay: opts.delay,
+            retry: opts.retry,
             headers: {
                 ...opts.headers,
                 queue: queue
@@ -177,11 +178,27 @@ export class BusProvider {
     }
 
     public async getQueueMessagesCount(queue: string): Promise<number> {
-
         queue = this.topologyManager.appendEnv(queue) || this.topologyManager.getDefaultQueueName();
+        let connection = this.topologyManager.connection;
+
+        return this.getQueueMessagesCountByConnection(queue, connection)
+
+    }
+
+    public async getQueueMessagesCountByConnection(queue: string, connection: string | IConnectionOptions): Promise<number> {
+
+        if (typeof connection == "string") {
+            let amqp = new URL(connection)
+            connection = {
+                username: amqp.username,
+                password: amqp.password,
+                hostname: amqp.hostname,
+                port: parseInt(amqp.port) || 5672,
+                vhost: amqp.pathname.substr(1),
+            }
+        }
 
         try {
-            let connection = this.topologyManager.connection;
 
             let params = {
                 json: true,
