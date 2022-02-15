@@ -12,7 +12,7 @@
   ],
   "main": "index.js",
   "dependencies": {
-    "@appolo/http": "^8.0.1",
+    "@appolo/http": "^8.0.2",
     "@appolo/logger": "^8.0.5",
     "@appolo/engine": "^8.0.19",
     "appolo-rabbit": "^8.0.5",
