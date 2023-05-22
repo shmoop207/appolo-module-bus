@@ -12,7 +12,7 @@ class Publisher {
     }
 }
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], Publisher.prototype, "busProvider", void 0);
 exports.Publisher = Publisher;
 //# sourceMappingURL=publisher.js.map

@@ -15,17 +15,17 @@ let MessageHandler = class MessageHandler {
     }
 };
 tslib_1.__decorate([
-    index_1.handler("Module.Test", { retry: { retires: 1 } })
+    (0, index_1.handler)("Module.Test", { retry: { retires: 1 } })
 ], MessageHandler.prototype, "handle", null);
 tslib_1.__decorate([
-    index_1.reply("Request.Module.Test")
+    (0, index_1.reply)("Request.Module.Test")
 ], MessageHandler.prototype, "replay", null);
 tslib_1.__decorate([
-    index_1.reply(() => "Request.Module.Test2")
+    (0, index_1.reply)(() => "Request.Module.Test2")
 ], MessageHandler.prototype, "replay2", null);
 MessageHandler = tslib_1.__decorate([
-    inject_1.define(),
-    inject_1.singleton()
+    (0, inject_1.define)(),
+    (0, inject_1.singleton)()
 ], MessageHandler);
 exports.MessageHandler = MessageHandler;
 //# sourceMappingURL=handler.js.map

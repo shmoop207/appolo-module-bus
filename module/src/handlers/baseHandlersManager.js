@@ -44,10 +44,10 @@ let BaseHandlersManager = class BaseHandlersManager {
     }
 };
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], BaseHandlersManager.prototype, "app", void 0);
 BaseHandlersManager = tslib_1.__decorate([
-    inject_1.singleton()
+    (0, inject_1.singleton)()
 ], BaseHandlersManager);
 exports.BaseHandlersManager = BaseHandlersManager;
 //# sourceMappingURL=baseHandlersManager.js.map

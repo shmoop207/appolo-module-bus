@@ -1,6 +1,6 @@
 import {IExchangeOptions, IQueueOptions, IConnectionOptions} from "appolo-rabbit";
 
-export interface IOptions  {
+export interface IOptions {
     id?: string;
     connection: string | IConnectionOptions;
     autoListen?: boolean;
@@ -14,5 +14,5 @@ export interface IOptions  {
     requestQueues?: IQueueOptions[]
     replyQueue?: string | IQueueOptions
     replyTimeout?: number
-    connectionRetries?:number
+    connectionRetries?: number
 }

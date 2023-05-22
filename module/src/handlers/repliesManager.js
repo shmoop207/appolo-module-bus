@@ -11,8 +11,8 @@ let RepliesManager = class RepliesManager extends baseHandlersManager_1.BaseHand
     }
 };
 RepliesManager = tslib_1.__decorate([
-    inject_1.define(),
-    inject_1.singleton()
+    (0, inject_1.define)(),
+    (0, inject_1.singleton)()
 ], RepliesManager);
 exports.RepliesManager = RepliesManager;
 //# sourceMappingURL=repliesManager.js.map

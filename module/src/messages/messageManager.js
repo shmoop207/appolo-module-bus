@@ -94,29 +94,29 @@ let MessageManager = class MessageManager {
     }
 };
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], MessageManager.prototype, "client", void 0);
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], MessageManager.prototype, "injector", void 0);
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], MessageManager.prototype, "handlersManager", void 0);
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], MessageManager.prototype, "repliesManager", void 0);
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], MessageManager.prototype, "topologyManager", void 0);
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], MessageManager.prototype, "logger", void 0);
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], MessageManager.prototype, "busProvider", void 0);
 MessageManager = tslib_1.__decorate([
-    inject_1.define(),
-    inject_1.singleton()
+    (0, inject_1.define)(),
+    (0, inject_1.singleton)()
 ], MessageManager);
 exports.MessageManager = MessageManager;
 //# sourceMappingURL=messageManager.js.map

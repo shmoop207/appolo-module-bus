@@ -65,7 +65,7 @@ let BusModule = BusModule_1 = class BusModule extends engine_1.Module {
     }
 };
 BusModule = BusModule_1 = tslib_1.__decorate([
-    engine_1.module()
+    (0, engine_1.module)()
 ], BusModule);
 exports.BusModule = BusModule;
 //# sourceMappingURL=busModule.js.map

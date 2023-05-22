@@ -66,11 +66,14 @@ export class BusProvider {
     private async _onRabbitFailed(err: Error) {
         this.logger.error("connection to rabbit failed", {err: err});
 
-        if (this._connectionRetries < this.moduleOptions.connectionRetries) {
+        if (this._connectionRetries <= this.moduleOptions.connectionRetries) {
+
+            this._connectionRetries++;
 
             this.logger.error(`connection to rabbit failed reconnecting attempt: ${this._connectionRetries}`, {err: err});
 
-            this._connectionRetries++;
+
+            await Promises.delay(1000);
 
             let [e] = await Promises.to<any, Error>(this.client.reconnect());
 
@@ -125,7 +128,14 @@ export class BusProvider {
         return result;
     }
 
-    public async requestStream<T>(opts: { routingKey?: string, type: string, data: any, expire?: number, queue?: string, exchange?: string }): Promise<PassThrough> {
+    public async requestStream<T>(opts: {
+        routingKey?: string,
+        type: string,
+        data: any,
+        expire?: number,
+        queue?: string,
+        exchange?: string
+    }): Promise<PassThrough> {
 
         let {params, exchange} = this._createPublishParams(opts);
 

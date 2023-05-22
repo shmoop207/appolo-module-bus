@@ -154,23 +154,23 @@ let TopologyManager = class TopologyManager {
     }
 };
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], TopologyManager.prototype, "moduleOptions", void 0);
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], TopologyManager.prototype, "env", void 0);
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], TopologyManager.prototype, "app", void 0);
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], TopologyManager.prototype, "handlersManager", void 0);
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], TopologyManager.prototype, "repliesManager", void 0);
 TopologyManager = tslib_1.__decorate([
-    inject_1.define(),
-    inject_1.singleton()
+    (0, inject_1.define)(),
+    (0, inject_1.singleton)()
 ], TopologyManager);
 exports.TopologyManager = TopologyManager;
 //# sourceMappingURL=topologyManager.js.map

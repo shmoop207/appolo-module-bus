@@ -7,8 +7,8 @@ const baseHandlersManager_1 = require("./baseHandlersManager");
 let HandlersManager = class HandlersManager extends baseHandlersManager_1.BaseHandlersManager {
 };
 HandlersManager = tslib_1.__decorate([
-    inject_1.define(),
-    inject_1.singleton()
+    (0, inject_1.define)(),
+    (0, inject_1.singleton)()
 ], HandlersManager);
 exports.HandlersManager = HandlersManager;
 //# sourceMappingURL=handlersManager.js.map

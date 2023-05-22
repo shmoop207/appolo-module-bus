@@ -35,9 +35,10 @@ let BusProvider = class BusProvider {
     }
     async _onRabbitFailed(err) {
         this.logger.error("connection to rabbit failed", { err: err });
-        if (this._connectionRetries < this.moduleOptions.connectionRetries) {
-            this.logger.error(`connection to rabbit failed reconnecting attempt: ${this._connectionRetries}`, { err: err });
+        if (this._connectionRetries <= this.moduleOptions.connectionRetries) {
             this._connectionRetries++;
+            this.logger.error(`connection to rabbit failed reconnecting attempt: ${this._connectionRetries}`, { err: err });
+            await utils_1.Promises.delay(1000);
             let [e] = await utils_1.Promises.to(this.client.reconnect());
             if (e) {
                 this._onRabbitFailed(e);
@@ -150,29 +151,29 @@ let BusProvider = class BusProvider {
     }
 };
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], BusProvider.prototype, "logger", void 0);
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], BusProvider.prototype, "moduleOptions", void 0);
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], BusProvider.prototype, "topologyManager", void 0);
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], BusProvider.prototype, "client", void 0);
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], BusProvider.prototype, "messageManager", void 0);
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], BusProvider.prototype, "httpService", void 0);
 tslib_1.__decorate([
-    inject_1.inject()
+    (0, inject_1.inject)()
 ], BusProvider.prototype, "app", void 0);
 BusProvider = tslib_1.__decorate([
-    inject_1.define(),
-    inject_1.singleton()
+    (0, inject_1.define)(),
+    (0, inject_1.singleton)()
 ], BusProvider);
 exports.BusProvider = BusProvider;
 //# sourceMappingURL=busProvider.js.map

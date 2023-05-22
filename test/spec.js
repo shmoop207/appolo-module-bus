@@ -15,7 +15,7 @@ function delay(time) {
 describe("bus module Spec", function () {
     let app;
     beforeEach(async () => {
-        app = engine_1.createApp({ root: __dirname, environment: "testing" });
+        app = (0, engine_1.createApp)({ root: __dirname, environment: "testing" });
         await app.module.use(index_1.BusModule.for({
             queue: "bus-test",
             requestQueue: "bus-test-request",

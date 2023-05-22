@@ -1,6 +1,6 @@
 {
   "name": "@appolo/bus",
-  "version": "8.1.0",
+  "version": "8.1.1",
   "description": "appolo bus module",
   "publishConfig": {
     "access": "public"
@@ -19,16 +19,16 @@
     "@appolo/utils": "^8.0.5"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.3",
-    "@types/mocha": "^10.0.0",
-    "@types/node": "^18.11.2",
-    "@types/sinon": "^10.0.13",
-    "@types/sinon-chai": "^3.2.8",
-    "chai": "^4.3.6",
-    "mocha": "^10.1.0",
-    "sinon": "^14.0.1",
+    "@types/chai": "^4.3.5",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.2.3",
+    "@types/sinon": "^10.0.15",
+    "@types/sinon-chai": "^3.2.9",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "sinon": "^15.1.0",
     "sinon-chai": "^3.7.0",
-    "typescript": "^4.8.4"
+    "typescript": "^4.9.5"
   },
   "repository": {
     "type": "git",
