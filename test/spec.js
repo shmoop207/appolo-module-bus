@@ -44,6 +44,7 @@ describe("bus module Spec", function () {
         await publisher.publishMethod("aa");
         await delay(1000);
         spy.should.have.been.calledOnce;
+        busProvider.publish({ deduplicationId: "aaaaa", throttle: 10000, data: { test: "aa" }, type: "aa" });
         spy.getCall(0).args[0].body.test.should.be.eq("aa");
     });
 });

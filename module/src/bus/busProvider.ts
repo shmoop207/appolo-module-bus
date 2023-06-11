@@ -4,7 +4,7 @@ import {App} from '@appolo/engine'
 import {IOptions} from "../common/IOptions";
 import {ILogger} from '@appolo/logger';
 import {HttpService} from '@appolo/http';
-import {Rabbit, IPublishOptions, IRequestOptions, IConnectionOptions} from "appolo-rabbit";
+import {Rabbit, IPublishOptions, IRequestOptions, IConnectionOptions,RabbitApi} from "appolo-rabbit";
 import {TopologyManager} from "../topology/topologyManager";
 import {MessageManager} from "../messages/messageManager";
 import {PassThrough} from "stream";
@@ -158,6 +158,9 @@ export class BusProvider {
             body: opts.data,
             routingKey: opts.routingKey || opts.type,
             delay: opts.delay,
+            debounce: opts.debounce,
+            throttle: opts.throttle,
+            deduplicationId: opts.deduplicationId,
             retry: opts.retry,
             headers: {
                 ...opts.headers,
@@ -188,43 +191,16 @@ export class BusProvider {
     }
 
     public async getQueueMessagesCount(queue: string): Promise<number> {
+
         queue = this.topologyManager.appendEnv(queue) || this.topologyManager.getDefaultQueueName();
-        let connection = this.topologyManager.connection;
 
-        return this.getQueueMessagesCountByConnection(queue, connection)
+        let apiQueue = await this.client.api.getQueue({name: queue});
 
+        return apiQueue ? apiQueue.messages : 0;
     }
 
-    public async getQueueMessagesCountByConnection(queue: string, connection: string | IConnectionOptions): Promise<number> {
-
-        if (typeof connection == "string") {
-            let amqp = new URL(connection)
-            connection = {
-                username: amqp.username,
-                password: amqp.password,
-                hostname: amqp.hostname,
-                port: parseInt(amqp.port) || 5672,
-                vhost: amqp.pathname.substr(1),
-            }
-        }
-
-        try {
-
-            let params = {
-                json: true,
-                url: `https://${connection.username}:${connection.password}@${connection.hostname}/api/queues/${connection.vhost}/${queue}`
-            };
-
-            let res = await this.httpService.request<{ messages: number }>(params);
-
-            return res.data.messages;
-        } catch (e) {
-            this.logger.error(`failed to get messages count from ${queue}`);
-            throw e;
-
-        }
-
-
+    public api():RabbitApi {
+        return this.client.api;
     }
 
     public async addHandlerClass(fn: Function) {

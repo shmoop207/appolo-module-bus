@@ -77,4 +77,7 @@ export interface IPublishProviderOptions {
     delay?: number
     retry?: IRetry
     headers?: { [index: string]: any }
+    debounce?: number
+    throttle?: number
+    deduplicationId?: string
 }

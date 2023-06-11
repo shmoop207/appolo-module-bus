@@ -91,6 +91,9 @@ let BusProvider = class BusProvider {
             body: opts.data,
             routingKey: opts.routingKey || opts.type,
             delay: opts.delay,
+            debounce: opts.debounce,
+            throttle: opts.throttle,
+            deduplicationId: opts.deduplicationId,
             retry: opts.retry,
             headers: Object.assign(Object.assign({}, opts.headers), { queue: queue })
         };
@@ -109,32 +112,11 @@ let BusProvider = class BusProvider {
     }
     async getQueueMessagesCount(queue) {
         queue = this.topologyManager.appendEnv(queue) || this.topologyManager.getDefaultQueueName();
-        let connection = this.topologyManager.connection;
-        return this.getQueueMessagesCountByConnection(queue, connection);
+        let apiQueue = await this.client.api.getQueue({ name: queue });
+        return apiQueue ? apiQueue.messages : 0;
     }
-    async getQueueMessagesCountByConnection(queue, connection) {
-        if (typeof connection == "string") {
-            let amqp = new URL(connection);
-            connection = {
-                username: amqp.username,
-                password: amqp.password,
-                hostname: amqp.hostname,
-                port: parseInt(amqp.port) || 5672,
-                vhost: amqp.pathname.substr(1),
-            };
-        }
-        try {
-            let params = {
-                json: true,
-                url: `https://${connection.username}:${connection.password}@${connection.hostname}/api/queues/${connection.vhost}/${queue}`
-            };
-            let res = await this.httpService.request(params);
-            return res.data.messages;
-        }
-        catch (e) {
-            this.logger.error(`failed to get messages count from ${queue}`);
-            throw e;
-        }
+    api() {
+        return this.client.api;
     }
     async addHandlerClass(fn) {
         let result = this.topologyManager.addMessageHandler(fn);

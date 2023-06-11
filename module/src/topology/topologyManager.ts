@@ -151,13 +151,13 @@ export class TopologyManager {
     }
 
     private _parseUri(uri: string) {
-        let amqp = url.parse(uri);
+        let amqp = new URL(uri);
         return {
-            username: amqp.auth.split(":")[0],
-            password: amqp.auth.split(":")[1],
+            username: amqp.username,
+            password: amqp.password,
             hostname: amqp.hostname,
             port: parseInt(amqp.port) || 5672,
-            vhost: amqp.path.substr(1),
+            vhost: amqp.pathname.substring(1),
         }
     }
 

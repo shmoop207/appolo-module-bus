@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TopologyManager = void 0;
 const tslib_1 = require("tslib");
 const inject_1 = require("@appolo/inject");
-const url = require("url");
 const defaults_1 = require("../common/defaults");
 const decorators_1 = require("../common/decorators");
 const utils_1 = require("@appolo/utils");
@@ -87,13 +86,13 @@ let TopologyManager = class TopologyManager {
         return connection;
     }
     _parseUri(uri) {
-        let amqp = url.parse(uri);
+        let amqp = new URL(uri);
         return {
-            username: amqp.auth.split(":")[0],
-            password: amqp.auth.split(":")[1],
+            username: amqp.username,
+            password: amqp.password,
             hostname: amqp.hostname,
             port: parseInt(amqp.port) || 5672,
-            vhost: amqp.path.substr(1),
+            vhost: amqp.pathname.substring(1),
         };
     }
     _createBindings() {
