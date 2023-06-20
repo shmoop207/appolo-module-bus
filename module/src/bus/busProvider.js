@@ -111,12 +111,17 @@ let BusProvider = class BusProvider {
         await this.client.close();
     }
     async getQueueMessagesCount(params) {
-        let { queue, connection } = params;
-        queue = this.topologyManager.appendEnv(queue) || this.topologyManager.getDefaultQueueName();
+        let { queue, connection, appendEnv } = params;
+        if (queue) {
+            queue = appendEnv ? this.topologyManager.appendEnv(queue) : queue;
+        }
+        else {
+            queue = this.topologyManager.getDefaultQueueName();
+        }
         let apiQueue = await this.client.api.getQueue({ name: queue, connection });
         return apiQueue ? apiQueue.messages : 0;
     }
-    api() {
+    get api() {
         return this.client.api;
     }
     async addHandlerClass(fn) {

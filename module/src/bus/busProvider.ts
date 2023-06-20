@@ -190,18 +190,26 @@ export class BusProvider {
         await this.client.close();
     }
 
-    public async getQueueMessagesCount(params: { queue: string, connection?: string }): Promise<number> {
+    public async getQueueMessagesCount(params: {
+        queue?: string,
+        connection?: string,
+        appendEnv?: boolean
+    }): Promise<number> {
 
-        let {queue, connection} = params;
+        let {queue, connection, appendEnv} = params;
 
-        queue = this.topologyManager.appendEnv(queue) || this.topologyManager.getDefaultQueueName();
+        if (queue) {
+            queue = appendEnv ? this.topologyManager.appendEnv(queue) : queue;
+        } else {
+            queue = this.topologyManager.getDefaultQueueName();
+        }
 
         let apiQueue = await this.client.api.getQueue({name: queue, connection});
 
         return apiQueue ? apiQueue.messages : 0;
     }
 
-    public api(): RabbitApi {
+    public get api(): RabbitApi {
         return this.client.api;
     }
 
