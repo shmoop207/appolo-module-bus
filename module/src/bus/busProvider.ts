@@ -4,7 +4,7 @@ import {App} from '@appolo/engine'
 import {IOptions} from "../common/IOptions";
 import {ILogger} from '@appolo/logger';
 import {HttpService} from '@appolo/http';
-import {Rabbit, IPublishOptions, IRequestOptions, IConnectionOptions,RabbitApi} from "appolo-rabbit";
+import {Rabbit, IPublishOptions, IRequestOptions, IConnectionOptions, RabbitApi} from "appolo-rabbit";
 import {TopologyManager} from "../topology/topologyManager";
 import {MessageManager} from "../messages/messageManager";
 import {PassThrough} from "stream";
@@ -190,16 +190,18 @@ export class BusProvider {
         await this.client.close();
     }
 
-    public async getQueueMessagesCount(queue: string): Promise<number> {
+    public async getQueueMessagesCount(params: { queue: string, connection?: string }): Promise<number> {
+
+        let {queue, connection} = params;
 
         queue = this.topologyManager.appendEnv(queue) || this.topologyManager.getDefaultQueueName();
 
-        let apiQueue = await this.client.api.getQueue({name: queue});
+        let apiQueue = await this.client.api.getQueue({name: queue, connection});
 
         return apiQueue ? apiQueue.messages : 0;
     }
 
-    public api():RabbitApi {
+    public api(): RabbitApi {
         return this.client.api;
     }
 
